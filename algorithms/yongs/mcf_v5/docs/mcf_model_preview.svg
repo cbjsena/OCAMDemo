@@ -1,0 +1,141 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="900" viewBox="0 0 1600 900">
+  <defs>
+    <marker id="arrow" markerWidth="6" markerHeight="6" refX="5.2" refY="3" orient="auto">
+      <path d="M0,0 L6,3 L0,6 z" fill="#111827"/>
+    </marker>
+    <marker id="candidateArrow" markerWidth="4" markerHeight="4" refX="3.3" refY="2" orient="auto">
+      <path d="M0,0 L4,2 L0,4 z" fill="#9CA3AF"/>
+    </marker>
+    <marker id="blueArrow" markerWidth="4.5" markerHeight="4.5" refX="3.8" refY="2.25" orient="auto">
+      <path d="M0,0 L4.5,2.25 L0,4.5 z" fill="#2563EB"/>
+    </marker>
+    <marker id="greenArrow" markerWidth="4.5" markerHeight="4.5" refX="3.8" refY="2.25" orient="auto">
+      <path d="M0,0 L4.5,2.25 L0,4.5 z" fill="#16A34A"/>
+    </marker>
+    <marker id="purpleArrow" markerWidth="4.5" markerHeight="4.5" refX="3.8" refY="2.25" orient="auto">
+      <path d="M0,0 L4.5,2.25 L0,4.5 z" fill="#7C3AED"/>
+    </marker>
+  </defs>
+
+  <rect width="1600" height="900" fill="#ffffff"/>
+
+  <text x="58" y="70" font-family="Apple SD Gothic Neo, Noto Sans CJK KR, sans-serif" font-size="40" font-weight="800" fill="#111827">
+    Multicommodity Flow 모델
+  </text>
+  <text x="58" y="108" font-family="Apple SD Gothic Neo, Noto Sans CJK KR, sans-serif" font-size="27" font-weight="600" fill="#374151">
+    기항 일정은 노드, 시간순으로 이어질 수 있는 후보 연결은 아크, 선택된 아크가 선박의 흐름이 된다
+  </text>
+
+  <!-- Main network panel -->
+  <rect x="82" y="150" width="1436" height="635" rx="16" fill="#F9FAFB" stroke="#D1D5DB" stroke-width="2"/>
+  <text x="118" y="202" font-family="Apple SD Gothic Neo, Noto Sans CJK KR, sans-serif" font-size="25" font-weight="800" fill="#111827">
+    시간순 후보 아크 위에서 선박 흐름 선택
+  </text>
+
+  <!-- time axis -->
+  <line x1="215" y1="698" x2="1395" y2="698" stroke="#94A3B8" stroke-width="1.7"/>
+  <line x1="215" y1="692" x2="215" y2="704" stroke="#94A3B8" stroke-width="1.7"/>
+  <line x1="450" y1="692" x2="450" y2="704" stroke="#94A3B8" stroke-width="1.7"/>
+  <line x1="685" y1="692" x2="685" y2="704" stroke="#94A3B8" stroke-width="1.7"/>
+  <line x1="920" y1="692" x2="920" y2="704" stroke="#94A3B8" stroke-width="1.7"/>
+  <line x1="1155" y1="692" x2="1155" y2="704" stroke="#94A3B8" stroke-width="1.7"/>
+  <line x1="1395" y1="692" x2="1395" y2="704" stroke="#94A3B8" stroke-width="1.7"/>
+  <text x="805" y="735" text-anchor="middle" font-family="Apple SD Gothic Neo, Noto Sans CJK KR, sans-serif" font-size="19" fill="#374151">시간</text>
+
+  <!-- lane baselines -->
+  <text x="160" y="300" text-anchor="end" font-family="Apple SD Gothic Neo, Noto Sans CJK KR, sans-serif" font-size="24" font-weight="700" fill="#111827">FE1</text>
+  <line x1="215" y1="294" x2="1395" y2="294" stroke="#CBD5E1" stroke-width="3"/>
+  <text x="160" y="450" text-anchor="end" font-family="Apple SD Gothic Neo, Noto Sans CJK KR, sans-serif" font-size="24" font-weight="700" fill="#111827">WA1</text>
+  <line x1="215" y1="444" x2="1395" y2="444" stroke="#CBD5E1" stroke-width="3"/>
+  <text x="160" y="600" text-anchor="end" font-family="Apple SD Gothic Neo, Noto Sans CJK KR, sans-serif" font-size="24" font-weight="700" fill="#111827">EC2</text>
+  <line x1="215" y1="594" x2="1395" y2="594" stroke="#CBD5E1" stroke-width="3"/>
+
+  <!-- Nodes positions:
+       FE1: PUS 270, SHA 455, SIN 735, RTM 1045, NYK 1290
+       WA1: LAX 330, OAK 610, PUS 940, YTN 1235
+       EC2: SGP 390, DXB 720, JED 1110, HFA 1350
+  -->
+
+  <!-- Candidate arcs: thin long-dashed, all time-forward examples -->
+  <g fill="none" stroke="#9CA3AF" stroke-width="2" stroke-linecap="round" stroke-dasharray="18 12" opacity="0.78" marker-end="url(#candidateArrow)">
+    <!-- cross-lane feasible forward arcs -->
+    <path d="M289 309 C365 355 468 405 587 438"/>
+    <path d="M754 309 C835 360 905 398 922 435"/>
+    <path d="M1064 309 C1138 355 1198 398 1217 433"/>
+    <path d="M349 459 C435 510 535 562 699 588"/>
+    <path d="M629 459 C720 510 825 558 1087 590"/>
+    <path d="M959 459 C1024 505 1065 548 1092 580"/>
+    <path d="M1254 459 C1286 500 1320 546 1338 573"/>
+    <path d="M409 581 C535 505 625 380 718 312"/>
+    <path d="M735 581 C860 505 970 390 1028 312"/>
+    <path d="M1123 581 C1175 505 1242 385 1278 316"/>
+  </g>
+
+  <!-- Selected arcs: aligned directly over candidate arcs -->
+  <g fill="none" stroke="#2563EB" stroke-width="6" stroke-linecap="round" marker-end="url(#blueArrow)">
+    <path d="M215 294 L246 294"/>
+    <path d="M294 294 L431 294"/>
+    <path d="M479 294 L711 294"/>
+    <path d="M759 294 L1021 294"/>
+    <path d="M1069 294 L1395 294"/>
+  </g>
+  <g fill="none" stroke="#16A34A" stroke-width="6" stroke-linecap="round" marker-end="url(#greenArrow)">
+    <path d="M215 444 L306 444"/>
+    <path d="M354 444 L586 444"/>
+    <path d="M634 444 L916 444"/>
+    <path d="M959 459 C1024 505 1065 548 1092 580"/>
+    <path d="M1134 594 L1395 594"/>
+  </g>
+  <g fill="none" stroke="#7C3AED" stroke-width="5.5" stroke-linecap="round" marker-end="url(#purpleArrow)">
+    <path d="M215 594 L366 594"/>
+    <path d="M414 594 L696 594"/>
+    <path d="M744 594 L1086 594"/>
+    <path d="M1123 581 C1175 505 1192 468 1217 455"/>
+    <path d="M1258 444 L1395 444"/>
+  </g>
+
+  <!-- Nodes on top -->
+  <g font-family="Apple SD Gothic Neo, Noto Sans CJK KR, sans-serif" font-size="17" text-anchor="middle">
+    <circle cx="270" cy="294" r="23" fill="#FFF7ED" stroke="#F97316" stroke-width="2.8"/>
+    <text x="270" y="300" fill="#C2410C">PUS</text>
+    <circle cx="455" cy="294" r="23" fill="#FFF7ED" stroke="#F97316" stroke-width="2.8"/>
+    <text x="455" y="300" fill="#C2410C">SHA</text>
+    <circle cx="735" cy="294" r="23" fill="#FFF7ED" stroke="#F97316" stroke-width="2.8"/>
+    <text x="735" y="300" fill="#C2410C">SIN</text>
+    <circle cx="1045" cy="294" r="23" fill="#FFF7ED" stroke="#F97316" stroke-width="2.8"/>
+    <text x="1045" y="300" fill="#C2410C">RTM</text>
+    <circle cx="1290" cy="294" r="23" fill="#FFF7ED" stroke="#F97316" stroke-width="2.8"/>
+    <text x="1290" y="300" fill="#C2410C">NYK</text>
+
+    <circle cx="330" cy="444" r="23" fill="#FFF7ED" stroke="#F97316" stroke-width="2.8"/>
+    <text x="330" y="450" fill="#C2410C">LAX</text>
+    <circle cx="610" cy="444" r="23" fill="#FFF7ED" stroke="#F97316" stroke-width="2.8"/>
+    <text x="610" y="450" fill="#C2410C">OAK</text>
+    <circle cx="940" cy="444" r="23" fill="#FFF7ED" stroke="#F97316" stroke-width="2.8"/>
+    <text x="940" y="450" fill="#C2410C">PUS</text>
+    <circle cx="1235" cy="444" r="23" fill="#FFF7ED" stroke="#F97316" stroke-width="2.8"/>
+    <text x="1235" y="450" fill="#C2410C">YTN</text>
+
+    <circle cx="390" cy="594" r="23" fill="#FFF7ED" stroke="#F97316" stroke-width="2.8"/>
+    <text x="390" y="600" fill="#C2410C">SGP</text>
+    <circle cx="720" cy="594" r="23" fill="#FFF7ED" stroke="#F97316" stroke-width="2.8"/>
+    <text x="720" y="600" fill="#C2410C">DXB</text>
+    <circle cx="1110" cy="594" r="23" fill="#FFF7ED" stroke="#F97316" stroke-width="2.8"/>
+    <text x="1110" y="600" fill="#C2410C">JED</text>
+    <circle cx="1350" cy="594" r="23" fill="#FFF7ED" stroke="#F97316" stroke-width="2.8"/>
+    <text x="1350" y="600" fill="#C2410C">HFA</text>
+  </g>
+
+  <!-- labels -->
+  <rect x="560" y="236" width="104" height="40" rx="20" fill="#2563EB"/>
+  <text x="612" y="263" text-anchor="middle" font-family="Apple SD Gothic Neo, Noto Sans CJK KR, sans-serif" font-size="18" fill="#ffffff">선박 A</text>
+  <rect x="700" y="387" width="104" height="40" rx="20" fill="#16A34A"/>
+  <text x="752" y="414" text-anchor="middle" font-family="Apple SD Gothic Neo, Noto Sans CJK KR, sans-serif" font-size="18" fill="#ffffff">선박 B</text>
+  <rect x="760" y="532" width="104" height="40" rx="20" fill="#7C3AED"/>
+  <text x="812" y="559" text-anchor="middle" font-family="Apple SD Gothic Neo, Noto Sans CJK KR, sans-serif" font-size="18" fill="#ffffff">선박 C</text>
+
+  <!-- Bottom one-line summary -->
+  <text x="800" y="835" text-anchor="middle" font-family="Apple SD Gothic Neo, Noto Sans CJK KR, sans-serif" font-size="26" font-weight="800" fill="#111827">
+    모든 기항 노드가 한 번씩 커버되도록, 비용이 가장 작은 선박별 아크 조합을 선택한다
+  </text>
+</svg>

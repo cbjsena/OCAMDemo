@@ -1,0 +1,78 @@
+{% extends "base.html" %}
+
+{% block title %}Simulations - OCAM Demo{% endblock %}
+
+{% block sidebar %}
+<h6 class="sidebar-heading">Simulation Menu</h6>
+<ul class="nav flex-column">
+    {% for item in sidebar_menu %}
+    <li class="nav-item">
+        <a class="nav-link {% if current_sidebar_menu == item.key %}active{% else %}text-white-50{% endif %}"
+           href="{% url item.url_name %}">
+            <i class="bi {{ item.icon }} me-2"></i> {{ item.name }}
+        </a>
+    </li>
+    {% endfor %}
+</ul>
+{% endblock %}
+
+{% block content %}
+<h3 class="mb-4"><i class="bi bi-list-ul"></i> Simulation List</h3>
+
+<div class="card shadow-sm">
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-striped table-hover mb-0">
+                <thead class="table-dark">
+                    <tr>
+                        <th>ID</th>
+                        <th>Instance</th>
+                        <th>Algorithm</th>
+                        <th>Status</th>
+                        <th>Progress</th>
+                        <th>Objective</th>
+                        <th>Time (s)</th>
+                        <th>Created</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for sim in simulations %}
+                    <tr>
+                        <td>{{ sim.id }}</td>
+                        <td>{{ sim.instance_name }}</td>
+                        <td>{{ sim.algorithm_name }}</td>
+                        <td>
+                            {% if sim.status == "SUCCESS" %}
+                            <span class="badge bg-success">{{ sim.status }}</span>
+                            {% elif sim.status == "RUNNING" %}
+                            <span class="badge bg-primary">{{ sim.status }}</span>
+                            {% elif sim.status == "FAILED" %}
+                            <span class="badge bg-danger">{{ sim.status }}</span>
+                            {% elif sim.status == "CANCELED" %}
+                            <span class="badge bg-secondary">{{ sim.status }}</span>
+                            {% else %}
+                            <span class="badge bg-warning text-dark">{{ sim.status }}</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <div class="progress" style="height: 20px; min-width: 80px;">
+                                <div class="progress-bar {% if sim.status == 'SUCCESS' %}bg-success{% elif sim.status == 'FAILED' %}bg-danger{% endif %}"
+                                     style="width: {{ sim.progress }}%">{{ sim.progress }}%</div>
+                            </div>
+                        </td>
+                        <td>{% if sim.objective_value %}{{ sim.objective_value|floatformat:2 }}{% else %}-{% endif %}</td>
+                        <td>{% if sim.execution_time %}{{ sim.execution_time|floatformat:1 }}{% else %}-{% endif %}</td>
+                        <td>{{ sim.created_at|date:"Y-m-d H:i" }}</td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="8" class="text-center text-muted py-4">No simulations found.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}
+

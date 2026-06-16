@@ -1,0 +1,15 @@
+# template configuration file
+algorithms:
+  - wsgoh/mip_twostage_v10_numpy
+instances:
+   - instances/toy_v1
+#  - instances/toy_v2/000_base
+#  - instances/toy_v2/001_EC1
+#  - instances/toy_v2/002_FE1
+#  - instances/toy_v2/003_FE2
+#  - instances/toy_v2/004_PS1
+#  - instances/toy_v2/005_WA1
+#  - instances/toy_v2/006_EC2
+outputs: outputs
+leaderboard: outputs/leaderboard
+timelimit: 600

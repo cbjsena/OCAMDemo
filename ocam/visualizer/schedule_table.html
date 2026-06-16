@@ -1,0 +1,907 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>OCAM Schedule Table</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --ink: #172026;
+      --muted: #66727e;
+      --line: #d9e1e7;
+      --panel: #ffffff;
+      --page: #f5f7f9;
+      --brand: #176f86;
+      --brand-strong: #0f5568;
+      --ok: #12845f;
+      --bad: #bf3b3b;
+      --shadow: 0 10px 30px rgba(23, 32, 38, 0.08);
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      background: var(--page);
+      color: var(--ink);
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+
+    /* ── topbar ── */
+    .topbar {
+      display: flex;
+      gap: 14px;
+      align-items: center;
+      padding: 12px 20px;
+      background: #fbfcfd;
+      border-bottom: 1px solid var(--line);
+      position: sticky;
+      top: 0;
+      z-index: 20;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-weight: 800;
+      font-size: 17px;
+      white-space: nowrap;
+    }
+
+    .mark {
+      display: grid;
+      place-items: center;
+      width: 32px;
+      height: 32px;
+      border-radius: 8px;
+      background: #dff2ee;
+      color: var(--brand-strong);
+      font-weight: 900;
+    }
+
+    /* ── controls ── */
+    .controls {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      padding: 14px 20px;
+      background: var(--panel);
+      border-bottom: 1px solid var(--line);
+      align-items: end;
+    }
+
+    .control-group {
+      display: grid;
+      gap: 5px;
+    }
+
+    .control-group label {
+      font-size: 11px;
+      font-weight: 800;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+
+    select, button {
+      font: inherit;
+      min-height: 36px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: white;
+      color: var(--ink);
+      padding: 0 10px;
+      cursor: pointer;
+    }
+
+    select { min-width: 160px; }
+
+    button:hover { border-color: var(--brand); }
+
+    button.primary {
+      border-color: var(--brand);
+      background: var(--brand);
+      color: white;
+      font-weight: 700;
+      padding: 0 16px;
+    }
+
+    .spacer { flex: 1; }
+
+    .back-link {
+      font-size: 13px;
+      color: var(--brand);
+      font-weight: 700;
+      text-decoration: none;
+    }
+
+    .back-link:hover { text-decoration: underline; }
+
+    /* ── summary badges ── */
+    .summary-bar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      padding: 10px 20px;
+      font-size: 12px;
+      color: var(--muted);
+      font-weight: 700;
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      padding: 3px 10px;
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      background: white;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .badge strong { color: var(--ink); }
+
+    /* ── table ── */
+    .table-wrap {
+      padding: 0 20px 40px;
+      overflow-x: auto;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      overflow: hidden;
+      box-shadow: var(--shadow);
+      font-size: 13px;
+    }
+
+    thead th {
+      position: sticky;
+      top: 0;
+      z-index: 10;
+      background: #f3f6f8;
+      color: var(--muted);
+      font-size: 11px;
+      font-weight: 800;
+      text-transform: uppercase;
+      padding: 10px 8px;
+      text-align: left;
+      border-bottom: 2px solid var(--line);
+      white-space: nowrap;
+      cursor: pointer;
+      user-select: none;
+    }
+
+    thead th:hover { color: var(--brand); }
+
+    thead th .sort-arrow {
+      font-size: 10px;
+      margin-left: 3px;
+      opacity: 0.5;
+    }
+
+    thead th.sorted .sort-arrow { opacity: 1; color: var(--brand); }
+
+    td {
+      padding: 8px;
+      border-bottom: 1px solid #edf1f4;
+      vertical-align: top;
+      white-space: nowrap;
+      max-width: 260px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    tr:hover td { background: #f8fbfd; }
+
+    td.num {
+      text-align: right;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .status-chip {
+      display: inline-block;
+      padding: 2px 7px;
+      border-radius: 5px;
+      font-size: 11px;
+      font-weight: 800;
+      color: white;
+    }
+
+    .status-INLANE_SAIL    { background: #2f9278; }
+    .status-OUTLANE_SAIL   { background: #8b5fbf; }
+    .status-PORT_STAY      { background: #2775b6; }
+    .status-PHASE_IN       { background: #2775b6; }
+    .status-PHASE_OUT      { background: #2775b6; }
+    .status-DRY_DOCK       { background: #c26b4f; }
+    .status-IDLE           { background: #7a8793; }
+    .status-DELIVERY       { background: #c26b4f; }
+    .status-REDELIVERY     { background: #c26b4f; }
+    .status-CANAL_PASSAGE  { background: #176f86; }
+    .status-TRANSSHIPMENT_UNLOAD { background: #8a6b22; }
+    .status-TRANSSHIPMENT_LOAD   { background: #8a6b22; }
+
+    .empty-state {
+      min-height: 300px;
+      display: grid;
+      place-items: center;
+      text-align: center;
+      color: var(--muted);
+      border: 1px dashed #b7c5ce;
+      border-radius: 8px;
+      background: white;
+      margin: 20px;
+    }
+
+    .cost-detail {
+      font-size: 11px;
+      color: var(--muted);
+      line-height: 1.5;
+    }
+
+    /* ── export button style ── */
+    .export-btn {
+      font-size: 13px;
+      padding: 0 12px;
+    }
+
+    /* ── pagination ── */
+    .pagination {
+      display: flex;
+      gap: 6px;
+      align-items: center;
+      justify-content: center;
+      padding: 14px 20px;
+      font-size: 13px;
+      color: var(--muted);
+      font-weight: 700;
+    }
+
+    .pagination button {
+      min-height: 32px;
+      font-size: 13px;
+      font-weight: 800;
+    }
+
+    .pagination button:disabled {
+      opacity: 0.4;
+      cursor: default;
+    }
+
+    @media (max-width: 900px) {
+      .controls { flex-direction: column; align-items: stretch; }
+      select { min-width: 0; width: 100%; }
+    }
+  </style>
+</head>
+<body>
+
+<header class="topbar">
+  <div class="brand"><span class="mark">T</span><span>Schedule Table</span></div>
+  <div class="spacer"></div>
+  <a href="index.html" class="back-link">← Visualizer</a>
+</header>
+
+<!-- Controls -->
+<div class="controls">
+  <div class="control-group">
+    <label>Source</label>
+    <button id="openDirBtn" class="primary" title="outputs 폴더 선택">📂 폴더 선택</button>
+  </div>
+  <div class="control-group">
+    <label>Run Folder</label>
+    <select id="folderSelect" disabled><option value="">-- 폴더 선택 대기 --</option></select>
+  </div>
+  <div class="control-group">
+    <label>Solution File</label>
+    <select id="fileSelect" disabled><option value="">-- 파일 없음 --</option></select>
+  </div>
+  <div class="control-group">
+    <label>Vessel</label>
+    <select id="vesselSelect" disabled><option value="">전체</option></select>
+  </div>
+  <div class="control-group">
+    <label>Status</label>
+    <select id="statusSelect" disabled><option value="">전체</option></select>
+  </div>
+  <div class="control-group">
+    <label>&nbsp;</label>
+    <button id="exportBtn" class="export-btn" disabled title="현재 필터 결과를 CSV로 내보내기">⬇ CSV</button>
+  </div>
+</div>
+
+<!-- Summary -->
+<div id="summaryBar" class="summary-bar"></div>
+
+<!-- Table or empty state -->
+<div id="content">
+  <div class="empty-state">
+    <div>
+      <h2>outputs 폴더를 선택하세요</h2>
+      <p>상단 📂 버튼을 클릭하여 outputs 폴더를 선택하면<br>날짜 폴더 → solution.json → vessel_schedules를 표로 볼 수 있습니다.</p>
+    </div>
+  </div>
+</div>
+
+<!-- Pagination -->
+<div id="pagination" class="pagination" style="display:none;"></div>
+
+<script>
+/* ──────────────────────────────────────────────
+   State
+   ────────────────────────────────────────────── */
+const PAGE_SIZE = 100;
+const state = {
+  directoryHandle: null,
+  folders: [],            // [{name, handle}]
+  solutionFiles: [],      // [{name, handle}]
+  solutionData: null,     // parsed JSON
+  flatRows: [],           // all events flattened
+  filteredRows: [],       // after vessel/status filter
+  vessels: [],
+  statuses: [],
+  page: 0,
+  sortCol: null,
+  sortAsc: true,
+};
+
+const els = {
+  openDirBtn: document.getElementById("openDirBtn"),
+  folderSelect: document.getElementById("folderSelect"),
+  fileSelect: document.getElementById("fileSelect"),
+  vesselSelect: document.getElementById("vesselSelect"),
+  statusSelect: document.getElementById("statusSelect"),
+  exportBtn: document.getElementById("exportBtn"),
+  summaryBar: document.getElementById("summaryBar"),
+  content: document.getElementById("content"),
+  pagination: document.getElementById("pagination"),
+};
+
+/* ──────────────────────────────────────────────
+   Column definitions per status
+   ────────────────────────────────────────────── */
+const STATUS_COLUMNS = {
+  INLANE_SAIL: [
+    { key: "lane_code",      label: "Lane" },
+    { key: "proforma_name",  label: "Proforma" },
+    { key: "position_no",    label: "Pos", type: "num" },
+    { key: "from_port_code", label: "From Port" },
+    { key: "from_port_seq",  label: "From Seq", type: "num" },
+    { key: "to_port_code",   label: "To Port" },
+    { key: "to_port_seq",    label: "To Seq", type: "num" },
+    { key: "sea_sail_start", label: "Sail Start", type: "datetime" },
+    { key: "sea_sail_end",   label: "Sail End", type: "datetime" },
+    { key: "distance",       label: "Distance", type: "num" },
+    { key: "avg_speed",      label: "Avg Speed", type: "num" },
+  ],
+  OUTLANE_SAIL: [
+    { key: "from_port_code", label: "From Port" },
+    { key: "to_port_code",   label: "To Port" },
+    { key: "sea_sail_start", label: "Sail Start", type: "datetime" },
+    { key: "sea_sail_end",   label: "Sail End", type: "datetime" },
+    { key: "distance",       label: "Distance", type: "num" },
+    { key: "avg_speed",      label: "Avg Speed", type: "num" },
+  ],
+  PORT_STAY: [
+    { key: "lane_code",       label: "Lane" },
+    { key: "proforma_name",   label: "Proforma" },
+    { key: "position_no",     label: "Pos", type: "num" },
+    { key: "port_code",       label: "Port" },
+    { key: "port_seq",        label: "Port Seq", type: "num" },
+    { key: "pilot_in_start",  label: "Pilot In", type: "datetime" },
+    { key: "berthing_start",  label: "Berth Start", type: "datetime" },
+    { key: "berthing_end",    label: "Berth End", type: "datetime" },
+    { key: "pilot_out_end",   label: "Pilot Out", type: "datetime" },
+  ],
+  PHASE_IN: [
+    { key: "lane_code",           label: "Lane" },
+    { key: "proforma_name",       label: "Proforma" },
+    { key: "position_no",         label: "Pos", type: "num" },
+    { key: "phase_in_port_code",  label: "Port" },
+    { key: "phase_in_port_seq",   label: "Port Seq", type: "num" },
+    { key: "phase_in_time",       label: "Phase In Time", type: "datetime" },
+  ],
+  PHASE_OUT: [
+    { key: "lane_code",           label: "Lane" },
+    { key: "proforma_name",       label: "Proforma" },
+    { key: "position_no",         label: "Pos", type: "num" },
+    { key: "phase_out_port_code", label: "Port" },
+    { key: "phase_out_port_seq",  label: "Port Seq", type: "num" },
+    { key: "phase_out_time",      label: "Phase Out Time", type: "datetime" },
+  ],
+  DRY_DOCK: [
+    { key: "dock_port_code", label: "Dock Port" },
+    { key: "dock_in",        label: "Dock In", type: "datetime" },
+    { key: "dock_out",       label: "Dock Out", type: "datetime" },
+  ],
+  IDLE: [
+    { key: "port_code",  label: "Port" },
+    { key: "idle_start", label: "Idle Start", type: "datetime" },
+    { key: "idle_end",   label: "Idle End", type: "datetime" },
+  ],
+  DELIVERY: [
+    { key: "delivery_port_code", label: "Port" },
+    { key: "delivery_time",      label: "Delivery Time", type: "datetime" },
+  ],
+  REDELIVERY: [
+    { key: "redelivery_port_code", label: "Port" },
+    { key: "redelivery_time",      label: "Redelivery Time", type: "datetime" },
+  ],
+  CANAL_PASSAGE: [
+    { key: "canal_port_code", label: "Canal Port" },
+    { key: "direction",       label: "Direction" },
+    { key: "passage_start",   label: "Passage Start", type: "datetime" },
+    { key: "passage_end",     label: "Passage End", type: "datetime" },
+    { key: "from_port_code",  label: "From Port" },
+    { key: "to_port_code",    label: "To Port" },
+  ],
+  TRANSSHIPMENT_UNLOAD: [
+    { key: "lane_code",      label: "Lane" },
+    { key: "proforma_name",  label: "Proforma" },
+    { key: "position_no",    label: "Pos", type: "num" },
+    { key: "ts_port_code",   label: "TS Port" },
+    { key: "ts_port_seq",    label: "TS Seq", type: "num" },
+    { key: "unload_start",   label: "Unload Start", type: "datetime" },
+    { key: "unload_end",     label: "Unload End", type: "datetime" },
+  ],
+  TRANSSHIPMENT_LOAD: [
+    { key: "lane_code",      label: "Lane" },
+    { key: "proforma_name",  label: "Proforma" },
+    { key: "position_no",    label: "Pos", type: "num" },
+    { key: "ts_port_code",   label: "TS Port" },
+    { key: "ts_port_seq",    label: "TS Seq", type: "num" },
+    { key: "load_start",     label: "Load Start", type: "datetime" },
+    { key: "load_end",       label: "Load End", type: "datetime" },
+  ],
+};
+
+/* Universal columns shown when multiple statuses are mixed ("전체") */
+const MIXED_COLUMNS = [
+  { key: "status",           label: "Status" },
+  { key: "_time_start",     label: "Start Time", type: "datetime" },
+  { key: "_time_end",       label: "End Time",   type: "datetime" },
+  { key: "_port_start",     label: "Start Port" },
+  { key: "_port_end",       label: "End Port" },
+  { key: "lane_code",       label: "Lane" },
+  { key: "proforma_name",   label: "Proforma" },
+  { key: "position_no",     label: "Pos", type: "num" },
+  { key: "distance",        label: "Distance", type: "num" },
+  { key: "avg_speed",       label: "Avg Speed", type: "num" },
+];
+
+/* Map: status → (start_time_field, end_time_field, start_port_field, end_port_field) */
+const TIME_PORT_MAP = {
+  INLANE_SAIL:          { ts: "sea_sail_start",  te: "sea_sail_end",   ps: "from_port_code",      pe: "to_port_code" },
+  OUTLANE_SAIL:         { ts: "sea_sail_start",  te: "sea_sail_end",   ps: "from_port_code",      pe: "to_port_code" },
+  PORT_STAY:            { ts: "pilot_in_start",  te: "pilot_out_end",  ps: "port_code",           pe: "port_code" },
+  PHASE_IN:             { ts: "phase_in_time",   te: "phase_in_time",  ps: "phase_in_port_code",  pe: "phase_in_port_code" },
+  PHASE_OUT:            { ts: "phase_out_time",  te: "phase_out_time", ps: "phase_out_port_code", pe: "phase_out_port_code" },
+  DRY_DOCK:             { ts: "dock_in",         te: "dock_out",       ps: "dock_port_code",      pe: "dock_port_code" },
+  IDLE:                 { ts: "idle_start",      te: "idle_end",       ps: "port_code",           pe: "port_code" },
+  DELIVERY:             { ts: "delivery_time",   te: "delivery_time",  ps: "delivery_port_code",  pe: "delivery_port_code" },
+  REDELIVERY:           { ts: "redelivery_time", te: "redelivery_time",ps: "redelivery_port_code",pe: "redelivery_port_code" },
+  CANAL_PASSAGE:        { ts: "passage_start",   te: "passage_end",    ps: "canal_port_code",     pe: "canal_port_code" },
+  TRANSSHIPMENT_UNLOAD: { ts: "unload_start",    te: "unload_end",     ps: "ts_port_code",        pe: "ts_port_code" },
+  TRANSSHIPMENT_LOAD:   { ts: "load_start",      te: "load_end",       ps: "ts_port_code",        pe: "ts_port_code" },
+};
+
+/* ──────────────────────────────────────────────
+   Event handlers
+   ────────────────────────────────────────────── */
+els.openDirBtn.addEventListener("click", openDirectory);
+els.folderSelect.addEventListener("change", onFolderChange);
+els.fileSelect.addEventListener("change", onFileChange);
+els.vesselSelect.addEventListener("change", onFilterChange);
+els.statusSelect.addEventListener("change", onFilterChange);
+els.exportBtn.addEventListener("click", exportCsv);
+
+/* ──────────────────────────────────────────────
+   Directory picker
+   ────────────────────────────────────────────── */
+async function openDirectory() {
+  if (!window.showDirectoryPicker) {
+    alert("이 브라우저는 showDirectoryPicker API를 지원하지 않습니다.\nChrome / Edge 를 사용해주세요.");
+    return;
+  }
+  try {
+    const handle = await window.showDirectoryPicker({ mode: "read" });
+    state.directoryHandle = handle;
+    await scanFolders();
+  } catch (e) {
+    if (e.name !== "AbortError") console.error(e);
+  }
+}
+
+async function scanFolders() {
+  const handle = state.directoryHandle;
+  if (!handle) return;
+  const folders = [];
+  const datePattern = /^\d{6}/;
+  for await (const [name, child] of handle.entries()) {
+    if (child.kind === "directory" && datePattern.test(name)) {
+      folders.push({ name, handle: child });
+    }
+  }
+  folders.sort((a, b) => b.name.localeCompare(a.name));
+  state.folders = folders;
+
+  const sel = els.folderSelect;
+  sel.innerHTML = "";
+  if (!folders.length) {
+    sel.innerHTML = '<option value="">날짜 폴더 없음</option>';
+    sel.disabled = true;
+    return;
+  }
+  sel.disabled = false;
+  for (const f of folders) {
+    const opt = document.createElement("option");
+    opt.value = f.name;
+    opt.textContent = formatFolderName(f.name);
+    sel.appendChild(opt);
+  }
+  await onFolderChange();
+}
+
+function formatFolderName(name) {
+  // "260519_1700" → "26-05-19 17:00"
+  const m = name.match(/^(\d{2})(\d{2})(\d{2})(?:_(\d{2})(\d{2}))?/);
+  if (!m) return name;
+  const label = `${m[1]}-${m[2]}-${m[3]}`;
+  return m[4] ? `${label} ${m[4]}:${m[5]}` : label;
+}
+
+/* ──────────────────────────────────────────────
+   Folder → scan solution files
+   ────────────────────────────────────────────── */
+async function onFolderChange() {
+  const folderName = els.folderSelect.value;
+  const folder = state.folders.find(f => f.name === folderName);
+  if (!folder) return;
+
+  const files = [];
+  for await (const [name, child] of folder.handle.entries()) {
+    if (child.kind === "file" && name.endsWith("_solution.json")) {
+      files.push({ name, handle: child });
+    }
+  }
+  files.sort((a, b) => a.name.localeCompare(b.name));
+  state.solutionFiles = files;
+
+  const sel = els.fileSelect;
+  sel.innerHTML = "";
+  if (!files.length) {
+    sel.innerHTML = '<option value="">solution.json 없음</option>';
+    sel.disabled = true;
+    clearTable();
+    return;
+  }
+  sel.disabled = false;
+  for (const f of files) {
+    const opt = document.createElement("option");
+    opt.value = f.name;
+    opt.textContent = f.name.replace(/_solution\.json$/, "");
+    sel.appendChild(opt);
+  }
+  await onFileChange();
+}
+
+/* ──────────────────────────────────────────────
+   Load solution JSON
+   ────────────────────────────────────────────── */
+async function onFileChange() {
+  const fileName = els.fileSelect.value;
+  const fileEntry = state.solutionFiles.find(f => f.name === fileName);
+  if (!fileEntry) { clearTable(); return; }
+
+  try {
+    const file = await fileEntry.handle.getFile();
+    const text = await file.text();
+    state.solutionData = JSON.parse(text);
+  } catch (e) {
+    console.error("JSON parse error:", e);
+    clearTable();
+    return;
+  }
+
+  buildFlatRows();
+  populateFilters();
+  onFilterChange();
+}
+
+/* ──────────────────────────────────────────────
+   Flatten vessel_schedules + virtual_vessel_schedules
+   ────────────────────────────────────────────── */
+function buildFlatRows() {
+  const rows = [];
+  const data = state.solutionData;
+  if (!data) { state.flatRows = []; return; }
+
+  const addSchedules = (schedules, virtual) => {
+    if (!schedules || typeof schedules !== "object") return;
+    for (const [vessel, val] of Object.entries(schedules)) {
+      const events = Array.isArray(val) ? val : (val && val.events ? val.events : []);
+      let idx = 0;
+      for (const evt of events) {
+        const row = { _vessel: vessel, _idx: idx++, _virtual: virtual, ...evt };
+        // Compute unified time / port fields for mixed-mode
+        const map = TIME_PORT_MAP[evt.status];
+        if (map) {
+          row._time_start = evt[map.ts] || "";
+          row._time_end   = evt[map.te] || "";
+          row._port_start = evt[map.ps] || "";
+          row._port_end   = evt[map.pe] || "";
+        }
+        rows.push(row);
+      }
+    }
+  };
+
+  addSchedules(data.vessel_schedules, false);
+  addSchedules(data.virtual_vessel_schedules, true);
+  state.flatRows = rows;
+}
+
+/* ──────────────────────────────────────────────
+   Populate vessel / status dropdowns
+   ────────────────────────────────────────────── */
+function populateFilters() {
+  const vessels = [...new Set(state.flatRows.map(r => r._vessel))].sort((a, b) => a.localeCompare(b, undefined, { numeric: true }));
+  const statuses = [...new Set(state.flatRows.map(r => r.status))].sort();
+  state.vessels = vessels;
+  state.statuses = statuses;
+
+  fillSelect(els.vesselSelect, vessels, "전체");
+  fillSelect(els.statusSelect, statuses, "전체");
+  els.vesselSelect.disabled = false;
+  els.statusSelect.disabled = false;
+  els.exportBtn.disabled = false;
+}
+
+function fillSelect(sel, items, allLabel) {
+  const prev = sel.value;
+  sel.innerHTML = "";
+  const optAll = document.createElement("option");
+  optAll.value = "";
+  optAll.textContent = allLabel;
+  sel.appendChild(optAll);
+  for (const item of items) {
+    const opt = document.createElement("option");
+    opt.value = item;
+    opt.textContent = item;
+    sel.appendChild(opt);
+  }
+  if ([...sel.options].some(o => o.value === prev)) sel.value = prev;
+}
+
+/* ──────────────────────────────────────────────
+   Filter & render
+   ────────────────────────────────────────────── */
+function onFilterChange() {
+  const vessel = els.vesselSelect.value;
+  const status = els.statusSelect.value;
+  let rows = state.flatRows;
+  if (vessel) rows = rows.filter(r => r._vessel === vessel);
+  if (status) rows = rows.filter(r => r.status === status);
+  state.filteredRows = rows;
+  state.page = 0;
+  state.sortCol = null;
+  state.sortAsc = true;
+  renderSummary();
+  renderTable();
+}
+
+function renderSummary() {
+  const rows = state.filteredRows;
+  const vesselCount = new Set(rows.map(r => r._vessel)).size;
+  const statusCounts = {};
+  for (const r of rows) statusCounts[r.status] = (statusCounts[r.status] || 0) + 1;
+
+  let html = `<span class="badge"><strong>${rows.length}</strong> events</span>`;
+  html += `<span class="badge"><strong>${vesselCount}</strong> vessels</span>`;
+  for (const s of Object.keys(statusCounts).sort()) {
+    html += `<span class="badge"><span class="status-chip status-${s}" style="font-size:10px;padding:1px 5px;">${s}</span> <strong>${statusCounts[s]}</strong></span>`;
+  }
+  els.summaryBar.innerHTML = html;
+}
+
+/* ──────────────────────────────────────────────
+   Table rendering
+   ────────────────────────────────────────────── */
+function getColumns() {
+  const status = els.statusSelect.value;
+  if (status && STATUS_COLUMNS[status]) {
+    return [{ key: "_vessel", label: "Vessel" }, { key: "_idx", label: "#", type: "num" }, ...STATUS_COLUMNS[status], { key: "event_costs", label: "Costs", type: "costs" }];
+  }
+  // mixed mode
+  return [{ key: "_vessel", label: "Vessel" }, { key: "_idx", label: "#", type: "num" }, ...MIXED_COLUMNS, { key: "event_costs", label: "Costs", type: "costs" }];
+}
+
+function renderTable() {
+  const rows = state.filteredRows;
+  if (!rows.length) {
+    els.content.innerHTML = '<div class="empty-state"><div><h2>해당 조건에 맞는 이벤트가 없습니다</h2></div></div>';
+    els.pagination.style.display = "none";
+    return;
+  }
+
+  const columns = getColumns();
+  const totalPages = Math.ceil(rows.length / PAGE_SIZE);
+  const page = Math.min(state.page, totalPages - 1);
+  state.page = page;
+  const start = page * PAGE_SIZE;
+  const pageRows = rows.slice(start, start + PAGE_SIZE);
+
+  // Build header
+  let thead = "<tr>";
+  for (const col of columns) {
+    const isSorted = state.sortCol === col.key;
+    const arrow = isSorted ? (state.sortAsc ? "▲" : "▼") : "⇅";
+    thead += `<th class="${isSorted ? "sorted" : ""}" data-col="${col.key}">${col.label} <span class="sort-arrow">${arrow}</span></th>`;
+  }
+  thead += "</tr>";
+
+  // Build body
+  let tbody = "";
+  for (const row of pageRows) {
+    tbody += "<tr>";
+    for (const col of columns) {
+      tbody += renderCell(row, col);
+    }
+    tbody += "</tr>";
+  }
+
+  els.content.innerHTML = `<div class="table-wrap"><table><thead>${thead}</thead><tbody>${tbody}</tbody></table></div>`;
+
+  // Attach sort handlers
+  els.content.querySelectorAll("thead th[data-col]").forEach(th => {
+    th.addEventListener("click", () => sortByColumn(th.dataset.col));
+  });
+
+  // Pagination
+  if (totalPages > 1) {
+    els.pagination.style.display = "flex";
+    els.pagination.innerHTML = `
+      <button ${page === 0 ? "disabled" : ""} data-page="0">⏮</button>
+      <button ${page === 0 ? "disabled" : ""} data-page="${page - 1}">◀</button>
+      <span>${page + 1} / ${totalPages} (${rows.length} rows)</span>
+      <button ${page >= totalPages - 1 ? "disabled" : ""} data-page="${page + 1}">▶</button>
+      <button ${page >= totalPages - 1 ? "disabled" : ""} data-page="${totalPages - 1}">⏭</button>
+    `;
+    els.pagination.querySelectorAll("button[data-page]").forEach(btn => {
+      btn.addEventListener("click", () => { state.page = Number(btn.dataset.page); renderTable(); });
+    });
+  } else {
+    els.pagination.style.display = "none";
+  }
+}
+
+function renderCell(row, col) {
+  const val = row[col.key];
+
+  if (col.key === "status") {
+    return `<td><span class="status-chip status-${val}">${val}</span></td>`;
+  }
+
+  if (col.type === "costs") {
+    if (!val || typeof val !== "object") return "<td>—</td>";
+    const parts = Object.entries(val).map(([k, v]) => `${k}: ${fmt(v)}`).join("<br>");
+    return `<td class="cost-detail">${parts}</td>`;
+  }
+
+  if (val === undefined || val === null || val === "") return "<td>—</td>";
+
+  if (col.type === "num") {
+    return `<td class="num">${typeof val === "number" ? fmt(val) : val}</td>`;
+  }
+
+  if (col.type === "datetime") {
+    return `<td>${formatDt(val)}</td>`;
+  }
+
+  return `<td>${escHtml(String(val))}</td>`;
+}
+
+function fmt(n) {
+  if (typeof n !== "number") return String(n);
+  if (Number.isInteger(n)) return n.toLocaleString();
+  return n.toLocaleString(undefined, { maximumFractionDigits: 2 });
+}
+
+function formatDt(val) {
+  if (!val) return "—";
+  // "2026-03-06 09:30:00" → "03-06 09:30"
+  const str = String(val);
+  const m = str.match(/(\d{4})-(\d{2})-(\d{2})\s+(\d{2}):(\d{2})/);
+  if (m) return `${m[2]}-${m[3]} ${m[4]}:${m[5]}`;
+  return escHtml(str);
+}
+
+function escHtml(s) {
+  return s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+}
+
+/* ──────────────────────────────────────────────
+   Sorting
+   ────────────────────────────────────────────── */
+function sortByColumn(colKey) {
+  if (state.sortCol === colKey) {
+    state.sortAsc = !state.sortAsc;
+  } else {
+    state.sortCol = colKey;
+    state.sortAsc = true;
+  }
+
+  const asc = state.sortAsc ? 1 : -1;
+  state.filteredRows.sort((a, b) => {
+    let av = a[colKey], bv = b[colKey];
+    if (av == null && bv == null) return 0;
+    if (av == null) return 1;
+    if (bv == null) return -1;
+    if (typeof av === "number" && typeof bv === "number") return (av - bv) * asc;
+    if (typeof av === "object" || typeof bv === "object") return 0;
+    return String(av).localeCompare(String(bv), undefined, { numeric: true }) * asc;
+  });
+
+  state.page = 0;
+  renderTable();
+}
+
+/* ──────────────────────────────────────────────
+   CSV export
+   ────────────────────────────────────────────── */
+function exportCsv() {
+  const rows = state.filteredRows;
+  if (!rows.length) return;
+  const columns = getColumns();
+  const header = columns.map(c => c.label);
+  const lines = [header.join(",")];
+
+  for (const row of rows) {
+    const cells = columns.map(col => {
+      const val = row[col.key];
+      if (col.type === "costs" && val && typeof val === "object") {
+        return `"${Object.entries(val).map(([k, v]) => `${k}:${v}`).join("; ")}"`;
+      }
+      if (val === undefined || val === null) return "";
+      const s = String(val);
+      return s.includes(",") || s.includes('"') || s.includes("\n") ? `"${s.replace(/"/g, '""')}"` : s;
+    });
+    lines.push(cells.join(","));
+  }
+
+  const blob = new Blob(["\uFEFF" + lines.join("\n")], { type: "text/csv;charset=utf-8;" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  const folder = els.folderSelect.value || "export";
+  const vessel = els.vesselSelect.value || "all";
+  const status = els.statusSelect.value || "all";
+  a.download = `schedule_${folder}_${vessel}_${status}.csv`;
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+/* ──────────────────────────────────────────────
+   Clear
+   ────────────────────────────────────────────── */
+function clearTable() {
+  state.solutionData = null;
+  state.flatRows = [];
+  state.filteredRows = [];
+  els.vesselSelect.innerHTML = '<option value="">전체</option>';
+  els.statusSelect.innerHTML = '<option value="">전체</option>';
+  els.vesselSelect.disabled = true;
+  els.statusSelect.disabled = true;
+  els.exportBtn.disabled = true;
+  els.summaryBar.innerHTML = "";
+  els.content.innerHTML = '<div class="empty-state"><div><h2>solution.json 파일이 없습니다</h2></div></div>';
+  els.pagination.style.display = "none";
+}
+</script>
+</body>
+</html>
+

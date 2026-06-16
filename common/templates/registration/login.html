@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+
+{% block title %}Login - OCAM Demo{% endblock %}
+
+{% block sidebar %}{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-4">
+            <div class="card shadow-sm">
+                <div class="card-header bg-primary text-white text-center py-3">
+                    <h4 class="mb-0">⚙️ OCAM Demo Login</h4>
+                </div>
+                <div class="card-body p-4">
+                    <form method="post">
+                        {% csrf_token %}
+
+                        {% if form.errors %}
+                            <div class="alert alert-danger small py-2">
+                                ID or Password is incorrect.
+                            </div>
+                        {% endif %}
+
+                        <div class="mb-3">
+                            <label for="id_username" class="form-label fw-bold">Username</label>
+                            <input type="text" name="username" class="form-control" id="id_username" required autofocus>
+                        </div>
+                        <div class="mb-4">
+                            <label for="id_password" class="form-label fw-bold">Password</label>
+                            <input type="password" name="password" class="form-control" id="id_password" required>
+                        </div>
+
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-primary btn-lg">Log In</button>
+                        </div>
+                    </form>
+                </div>
+                <div class="card-footer text-center bg-white py-3">
+                    <small class="text-muted">Contact admin for account creation.</small>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+

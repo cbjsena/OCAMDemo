@@ -1,0 +1,74 @@
+{% extends "base.html" %}
+
+{% block title %}Create Simulation - OCAM Demo{% endblock %}
+
+{% block sidebar %}
+<h6 class="sidebar-heading">Simulation Menu</h6>
+<ul class="nav flex-column">
+    {% for item in sidebar_menu %}
+    <li class="nav-item">
+        <a class="nav-link {% if current_sidebar_menu == item.key %}active{% else %}text-white-50{% endif %}"
+           href="{% url item.url_name %}">
+            <i class="bi {{ item.icon }} me-2"></i> {{ item.name }}
+        </a>
+    </li>
+    {% endfor %}
+</ul>
+{% endblock %}
+
+{% block content %}
+<h3 class="mb-4"><i class="bi bi-plus-circle"></i> Create Simulation</h3>
+
+<div class="card shadow-sm" style="max-width: 600px;">
+    <div class="card-body">
+        <form method="post">
+            {% csrf_token %}
+
+            <div class="mb-3">
+                <label for="instance_name" class="form-label fw-bold">Instance</label>
+                <select name="instance_name" id="instance_name" class="form-select" required>
+                    <option value="">-- Select Instance --</option>
+                    {% for inst in instances %}
+                    <option value="{{ inst.name }}" {% if selected_instance_name == inst.name %}selected{% endif %}>
+                        {{ inst.name }} ({{ inst.files|length }} files)
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="mb-3">
+                <label for="algorithm_name" class="form-label fw-bold">Algorithm</label>
+                <select name="algorithm_name" id="algorithm_name" class="form-select" required>
+                    <option value="">-- Select Algorithm --</option>
+                    {% for algo in algorithms %}
+                    <option value="{{ algo.full_name }}" {% if not algo.valid %}disabled{% endif %}>
+                        {{ algo.full_name }}
+                        {% if not algo.valid %}(invalid solver.py){% endif %}
+                    </option>
+                    {% endfor %}
+                </select>
+                {% if not algorithms %}
+                <div class="form-text text-warning">
+                    <i class="bi bi-exclamation-triangle"></i>
+                    No algorithms found. Using mock engine.
+                    Place solver.py in <code>algorithms/&lt;researcher&gt;/&lt;name&gt;/</code>
+                </div>
+                {% endif %}
+            </div>
+
+            <div class="mb-3">
+                <label for="description" class="form-label fw-bold">Description (optional)</label>
+                <textarea name="description" id="description" class="form-control" rows="3"
+                          placeholder="Describe what this simulation tests..."></textarea>
+            </div>
+
+            <div class="d-grid">
+                <button type="submit" class="btn btn-primary btn-lg">
+                    <i class="bi bi-play-fill"></i> Run Simulation
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
+

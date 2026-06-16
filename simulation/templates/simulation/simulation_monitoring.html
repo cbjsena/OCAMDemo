@@ -1,0 +1,125 @@
+{% extends "base.html" %}
+
+{% block title %}Monitoring - OCAM Demo{% endblock %}
+
+{% block sidebar %}
+<h6 class="sidebar-heading">Simulation Menu</h6>
+<ul class="nav flex-column">
+    {% for item in sidebar_menu %}
+    <li class="nav-item">
+        <a class="nav-link {% if current_sidebar_menu == item.key %}active{% else %}text-white-50{% endif %}"
+           href="{% url item.url_name %}">
+            <i class="bi {{ item.icon }} me-2"></i> {{ item.name }}
+        </a>
+    </li>
+    {% endfor %}
+</ul>
+{% endblock %}
+
+{% block content %}
+<h3 class="mb-4"><i class="bi bi-broadcast-pin"></i> Simulation Monitoring</h3>
+
+<div id="monitoring-container">
+    {% for sim in simulations %}
+    <div class="card shadow-sm mb-3" id="sim-card-{{ sim.id }}">
+        <div class="card-body">
+            <div class="d-flex justify-content-between align-items-center mb-2">
+                <h5 class="mb-0">
+                    Sim #{{ sim.id }} — {{ sim.instance_name }}
+                    <small class="text-muted">({{ sim.algorithm_name }})</small>
+                </h5>
+                <div>
+                    <span class="badge bg-primary sim-status" data-sim-id="{{ sim.id }}">{{ sim.status }}</span>
+                    <button class="btn btn-sm btn-outline-danger ms-2 btn-cancel"
+                            data-sim-id="{{ sim.id }}"
+                            data-cancel-url="{% url 'simulation:simulation_cancel' sim_id=sim.id %}">
+                        <i class="bi bi-stop-circle"></i> Cancel
+                    </button>
+                </div>
+            </div>
+            <div class="progress" style="height: 25px;">
+                <div class="progress-bar progress-bar-striped progress-bar-animated sim-progress"
+                     data-sim-id="{{ sim.id }}"
+                     style="width: {{ sim.progress }}%">
+                    {{ sim.progress }}%
+                </div>
+            </div>
+            <small class="text-muted sim-model-status" data-sim-id="{{ sim.id }}">
+                {{ sim.model_status|default:"Waiting..." }}
+            </small>
+        </div>
+    </div>
+    {% empty %}
+    <div class="alert alert-info">
+        <i class="bi bi-info-circle"></i> No running simulations.
+    </div>
+    {% endfor %}
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// AJAX Polling — 3초마다 진행률 업데이트 (항목 E)
+(function() {
+    const simCards = document.querySelectorAll('[id^="sim-card-"]');
+    if (!simCards.length) return;
+
+    const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]')?.value
+        || '{{ csrf_token }}';
+
+    // Cancel 버튼 이벤트
+    document.querySelectorAll('.btn-cancel').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const url = this.dataset.cancelUrl;
+            fetch(url, {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': csrfToken,
+                    'X-Requested-With': 'XMLHttpRequest',
+                },
+            }).then(r => r.json()).then(data => {
+                if (data.status === 'CANCELED') {
+                    this.disabled = true;
+                }
+            });
+        });
+    });
+
+    // Polling
+    function pollStatus() {
+        simCards.forEach(card => {
+            const simId = card.id.replace('sim-card-', '');
+            fetch(`/simulation/api/${simId}/status/`)
+                .then(r => r.json())
+                .then(data => {
+                    const bar = card.querySelector('.sim-progress');
+                    const status = card.querySelector('.sim-status');
+                    const modelStatus = card.querySelector('.sim-model-status');
+
+                    bar.style.width = data.progress + '%';
+                    bar.textContent = data.progress + '%';
+                    status.textContent = data.status;
+                    modelStatus.textContent = data.model_status || '';
+
+                    if (data.status === 'SUCCESS') {
+                        bar.classList.remove('progress-bar-animated');
+                        bar.classList.add('bg-success');
+                        status.className = 'badge bg-success sim-status';
+                    } else if (data.status === 'FAILED') {
+                        bar.classList.remove('progress-bar-animated');
+                        bar.classList.add('bg-danger');
+                        status.className = 'badge bg-danger sim-status';
+                    } else if (data.status === 'CANCELED') {
+                        bar.classList.remove('progress-bar-animated');
+                        bar.classList.add('bg-secondary');
+                        status.className = 'badge bg-secondary sim-status';
+                    }
+                });
+        });
+    }
+
+    setInterval(pollStatus, 3000);
+})();
+</script>
+{% endblock %}
+

@@ -1,0 +1,154 @@
+{% extends "base.html" %}
+
+{% block title %}Compare Instances - OCAM Demo{% endblock %}
+
+{% block sidebar %}
+<h6 class="sidebar-heading">Instance Menu</h6>
+<ul class="nav flex-column">
+    {% for item in sidebar_menu %}
+    <li class="nav-item">
+        <a class="nav-link text-white-50"
+           href="{% url item.url_name %}">
+            <i class="bi {{ item.icon }} me-2"></i> {{ item.name }}
+        </a>
+    </li>
+    {% endfor %}
+</ul>
+{% endblock %}
+
+{% block content %}
+<h3 class="mb-4"><i class="bi bi-diagram-2"></i> Compare Instances</h3>
+
+<div class="card shadow-sm mb-4">
+    <div class="card-body">
+        <h5 class="card-title">Select Instances to Compare</h5>
+        <form method="post" class="mt-3">
+            {% csrf_token %}
+            <div class="row g-3 align-items-end">
+                <div class="col-md-5">
+                    <label for="id_instance_1" class="form-label">Instance 1</label>
+                    <select class="form-select" id="id_instance_1" name="instance_1" required>
+                        <option value="">-- Select Instance --</option>
+                        {% for inst in instances %}
+                        <option value="{{ inst.name }}"
+                                {% if inst.name in selected_instances %}selected{% endif %}>
+                            {{ inst.name }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-5">
+                    <label for="id_instance_2" class="form-label">Instance 2</label>
+                    <select class="form-select" id="id_instance_2" name="instance_2" required>
+                        <option value="">-- Select Instance --</option>
+                        {% for inst in instances %}
+                        <option value="{{ inst.name }}"
+                                {% if selected_instances and selected_instances|length > 1 and inst.name == selected_instances.1 %}selected{% endif %}>
+                            {{ inst.name }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <button type="submit" class="btn btn-primary w-100">
+                        <i class="bi bi-arrow-left-right"></i> Compare
+                    </button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+{% if comparison_result %}
+<div class="card shadow-sm">
+    <div class="card-header bg-light">
+        <h5 class="mb-0">
+            Comparison Results
+            <small class="text-muted ms-2">
+                {{ comparison_result.instance_1 }} vs {{ comparison_result.instance_2 }}
+            </small>
+        </h5>
+    </div>
+    <div class="table-responsive">
+        <table class="table table-hover align-middle mb-0">
+            <thead class="table-light">
+            <tr>
+                <th>File Name</th>
+                <th class="text-center">Status</th>
+                <th class="text-center">Difference Count</th>
+            </tr>
+            </thead>
+            <tbody>
+            {% for file_info in comparison_result.files %}
+            <tr>
+                <td>
+                    <code>{{ file_info.filename }}</code>
+                </td>
+                <td class="text-center">
+                    {% if file_info.status == "same" %}
+                    <span class="badge bg-success">
+                        <i class="bi bi-check-circle"></i> Same
+                    </span>
+                    {% elif file_info.status == "different" %}
+                    <span class="badge bg-warning text-dark">
+                        <i class="bi bi-exclamation-circle"></i> Different
+                    </span>
+                    {% elif file_info.status == "different_rows" %}
+                    <span class="badge bg-warning text-dark">
+                        <i class="bi bi-exclamation-circle"></i> Row Count Mismatch
+                    </span>
+                    {% elif file_info.status == "different_headers" %}
+                    <span class="badge bg-danger">
+                        <i class="bi bi-exclamation-triangle"></i> Header Mismatch
+                    </span>
+                    {% elif file_info.status == "missing_in_1" %}
+                    <span class="badge bg-secondary">
+                        <i class="bi bi-dash-circle"></i> Missing in Inst. 1
+                    </span>
+                    {% elif file_info.status == "missing_in_2" %}
+                    <span class="badge bg-secondary">
+                        <i class="bi bi-dash-circle"></i> Missing in Inst. 2
+                    </span>
+                    {% elif file_info.status == "error" %}
+                    <span class="badge bg-danger">
+                        <i class="bi bi-exclamation-triangle"></i> Error
+                    </span>
+                    {% else %}
+                    <span class="badge bg-light text-dark">{{ file_info.status }}</span>
+                    {% endif %}
+                </td>
+                <td class="text-center">
+                    {% if file_info.status == "same" %}
+                    <i class="bi bi-check-lg text-success fw-bold"></i> 0
+                    {% elif file_info.diff_rows > 0 %}
+                    <span class="badge bg-light text-danger">{{ file_info.diff_rows }}</span>
+                    {% else %}
+                    <span class="text-muted">-</span>
+                    {% endif %}
+                </td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="3" class="text-center text-muted py-3">
+                    No files to compare
+                </td>
+            </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div class="mt-4">
+    <h5>Legend</h5>
+    <ul class="small text-muted">
+        <li><span class="badge bg-success">Same</span> — Files are identical</li>
+        <li><span class="badge bg-warning text-dark">Different</span> — Files have different row content</li>
+        <li><span class="badge bg-warning text-dark">Row Count Mismatch</span> — Different number of rows</li>
+        <li><span class="badge bg-danger">Header Mismatch</span> — Column headers are different</li>
+        <li><span class="badge bg-secondary">Missing</span> — File exists in only one instance</li>
+    </ul>
+</div>
+{% endif %}
+{% endblock %}
+

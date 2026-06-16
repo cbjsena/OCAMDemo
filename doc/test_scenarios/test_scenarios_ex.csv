@@ -1,0 +1,14 @@
+ID,기능명,시나리오 설명,Given,When,Then
+AP_DST_DIS_001,거리 조회 (정상),두 포트 간의 거리 정보를 조회,Distance 데이터 존재(PUS -> TYO: 500),origin=PUS&destination=TYO&scenario_code=Base Scenario,1. Status 200 OK2. distance: 5003. eca_distance: 100
+AP_DST_DIS_002,거리 조회 (없음),존재하지 않는 경로 조회,-,origin=PUS&destination=LAX&scenario_code=Base Scenario,1. Status 200 OK2. distance: 0 (또는 null)3. 에러 발생하지 않음
+AP_PF_DIS_001,Lane 목록 조회,시나리오에 포함된 Lane 목록 반환,"Proforma 데이터 존재(LANE_A, LANE_B)",scenario_code=Base Scenario,"1. Status 200 OK2. options 리스트에 [""LANE_A"", ""LANE_B""] 포함"
+AP_PF_DIS_002,PF 명 목록 조회,특정 Lane의 Proforma 이름 목록 반환,"LANE_A에 PF_01, PF_02 존재",scenario_code=Base Scenario&lane_code=LANE_A,"1. Status 200 OK2. options 리스트에 [""PF_01"", ""PF_02""] 포함3. 타 Lane 데이터 미포함"
+AP_PF_DIS_003,PF 상세 조회,Proforma의 상세 속성 반환,PF_01 데이터 존재,scenario_code=Base Scenario&lane_code=LANE_A&proforma_name=PF_01,"1. Status 200 OK2. status: ""success""3. duration, first_port_day, declared_count 값 검증"
+AP_PF_DIS_004,PF 상세 (실패),존재하지 않는 Proforma 조회,-,proforma_name=INVALID,"1. Status 200 OK2. status: ""error""3. message: ""Proforma not found."""
+AP_VSL_DIS_001,선박 목록 (Capacity),Create 화면용 전체 가용 선박 조회,VesselCapacity 테이블에V_CAP_1 존재,scenario_code=Base Scenario,"1. Status 200 OK2. vessels 리스트 반환3. 각 항목에 vessel_code, max_cap 포함"
+AP_VSL_DIS_002,점유 확인 (Busy),특정 기간에 스케줄이 있는 선박 확인,"LRS 테이블에 V_BUSY 존재(기간: 2/1 ~ 2/10, LANE_X)",vessel_code=V_BUSY&start_date=2026-02-05&end_date=2026-02-05,"1. Status 200 OK2. lane_code: ""LANE_X"" 반환 (점유 중임)"
+AP_VSL_DIS_003,점유 확인 (Free),스케줄이 없는 선박/기간 확인,LRS 데이터 없음,vessel_code=V_FREE&start_date=...,"1. Status 200 OK2. lane_code: """" (빈 문자열)"
+AP_VSL_DIS_004,선박 옵션 (검색용),LRS 기준 선박 목록 (필터링),"LRS에 V_LRS_1(Lane A), V_LRS_2(Lane B) 존재",scenario_code=Base Scenario&lane_code=LANE_A,"1. Status 200 OK2. options 리스트에 ""V_LRS_1"" 포함3. ""V_LRS_2""는 미포함 (Lane 필터링 동작)"
+AP_BVL_DIS_001,Base Vessel 마스터 목록,BaseVesselInfo 전체 목록 JSON 반환,"BaseVesselInfo에 V001(Ship1/O), V002(Ship2/C) 존재",GET /api/vessel/base/,"1. Status 200 OK2. vessels 배열 반환3. 각 항목에 vessel_code, vessel_name, own_yn 포함4. vessel_code 기준 정렬"
+AP_BVL_DIS_002,Base Vessel 빈 데이터,데이터 없을 때 빈 배열 반환,BaseVesselInfo 비어있음,GET /api/vessel/base/,"1. Status 200 OK2. vessels: []"
+AP_BVL_DIS_003,Base Vessel 비로그인 차단,인증 미인가 사용자 접근 차단,client (비로그인),GET /api/vessel/base/,1. Redirect 302 (/accounts/login/)

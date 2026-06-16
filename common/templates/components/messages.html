@@ -1,0 +1,43 @@
+{% comment %}
+  Toast 알림 컴포넌트 (항목 B)
+  Django messages framework 연동
+{% endcomment %}
+
+{% if messages %}
+<div class="toast-container position-fixed top-0 end-0 p-3" style="z-index: 1055;">
+    {% for message in messages %}
+    <div class="toast align-items-center text-white border-0 mb-2 fade show"
+         role="alert" aria-live="assertive" aria-atomic="true"
+         data-bs-delay="5000">
+        <div class="d-flex
+            {% if message.tags == 'success' %}bg-success
+            {% elif message.tags == 'error' %}bg-danger
+            {% elif message.tags == 'warning' %}bg-warning text-dark
+            {% else %}bg-primary{% endif %}">
+
+            <div class="toast-body">
+                {% if message.tags == 'success' %}<i class="bi bi-check-circle-fill me-2"></i>
+                {% elif message.tags == 'error' %}<i class="bi bi-exclamation-triangle-fill me-2"></i>
+                {% elif message.tags == 'warning' %}<i class="bi bi-exclamation-circle-fill me-2"></i>
+                {% else %}<i class="bi bi-info-circle-fill me-2"></i>
+                {% endif %}
+                {{ message }}
+            </div>
+            <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        var toastElList = [].slice.call(document.querySelectorAll('.toast'));
+        toastElList.map(function (toastEl) {
+            var toast = new bootstrap.Toast(toastEl, { autohide: true });
+            toast.show();
+            return toast;
+        });
+    });
+</script>
+{% endif %}
+

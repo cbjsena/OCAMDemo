@@ -1,0 +1,99 @@
+{% extends "base.html" %}
+
+{% block title %}Results - OCAM Demo{% endblock %}
+
+{% block sidebar %}
+<h6 class="sidebar-heading">Results</h6>
+<ul class="nav flex-column">
+    {% for r in results %}
+    <li class="nav-item">
+        <a class="nav-link text-white-50"
+           href="{% url 'result:result_view' folder=r.folder %}">
+            <i class="bi bi-bar-chart-line me-1"></i>
+            <small>{{ r.folder }}<br><span class="text-white-50">{{ r.algorithm_name }}</span></small>
+        </a>
+    </li>
+    {% empty %}
+    <li class="nav-item">
+        <span class="nav-link text-white-50 small">No results yet.</span>
+    </li>
+    {% endfor %}
+</ul>
+{% endblock %}
+
+{% block content %}
+<h3 class="mb-4"><i class="bi bi-bar-chart-line"></i> Result List</h3>
+
+<div class="card shadow-sm">
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="table-dark">
+                    <tr>
+                        <th>Run Folder</th>
+                        <th>Algorithm</th>
+                        <th>Instance</th>
+                        <th>Status</th>
+                        <th>Validation</th>
+                        <th class="text-end">Objective (total_cost)</th>
+                        <th class="text-end">Time (s)</th>
+                        <th class="text-center">View</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for r in results %}
+                    <tr>
+                        <td class="text-nowrap">
+                            <small class="text-muted">{{ r.folder }}</small>
+                        </td>
+                        <td>{{ r.algorithm_name }}</td>
+                        <td>{{ r.instance_name|default:"-" }}</td>
+                        <td>
+                            {% if r.status == "ok" %}
+                                <span class="badge bg-success">ok</span>
+                            {% elif r.status == "error" %}
+                                <span class="badge bg-danger">error</span>
+                            {% elif r.status == "LB" %}
+                                <span class="badge bg-info text-dark">LB</span>
+                            {% else %}
+                                <span class="badge bg-secondary">{{ r.status|default:"-" }}</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if r.validation_status == "passed" %}
+                                <span class="badge bg-success">passed</span>
+                            {% elif r.validation_status == "failed" %}
+                                <span class="badge bg-danger">failed</span>
+                            {% elif r.validation_status %}
+                                <span class="badge bg-secondary">{{ r.validation_status }}</span>
+                            {% else %}
+                                <span class="text-muted">-</span>
+                            {% endif %}
+                        </td>
+                        <td class="text-end">
+                            {% if r.objective_value %}{{ r.objective_value|floatformat:0 }}{% else %}-{% endif %}
+                        </td>
+                        <td class="text-end">
+                            {% if r.execution_time %}{{ r.execution_time|floatformat:1 }}{% else %}-{% endif %}
+                        </td>
+                        <td class="text-center">
+                            <a href="{% url 'result:result_view' folder=r.folder %}"
+                               class="btn btn-sm btn-primary"
+                               title="OCAM Visualizer 로 보기">
+                                <i class="bi bi-bar-chart-fill"></i> Visualize
+                            </a>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="8" class="text-center text-muted py-4">
+                            No results found. Run a simulation first.
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

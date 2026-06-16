@@ -1,0 +1,303 @@
+\documentclass[11pt]{article}
+
+\usepackage[margin=1in]{geometry}
+\usepackage{kotex}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{lmodern}
+\usepackage{microtype}
+\usepackage{amsmath,amssymb,mathtools}
+\usepackage{booktabs}
+\usepackage{array}
+\usepackage{tabularx}
+\usepackage{hyperref}
+
+\hypersetup{
+  colorlinks=true,
+  linkcolor=blue!55!black,
+  urlcolor=blue!55!black,
+  citecolor=blue!55!black
+}
+
+\title{MCF v6 Lower Bound Model with Canal Detours and Relaxed TS Timing}
+\author{Yongsu Rah}
+\date{2026년 5월 8일}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+이 문서는 \texttt{algorithms/yongs/mcf\_v6\_lb}에서 \texttt{mcf\_v5} 대비
+달라지는 부분만 기술한다. 공통적인 multicommodity flow 네트워크, position
+activation, service coverage, TS activation/balance, dry dock 보정, 목적함수의
+기본 구조는 \texttt{mcf\_v5}와 동일하다. \texttt{mcf\_v6\_lb}의 목적은 TS 발생
+시각이 고정되지 않은 정확한 원 문제의 최적값에 대한 lower bound를 얻는 것이다.
+이를 위해 TS 관련 항해 가능성을 낙관적으로 평가하는 완화 네트워크를 구성하고,
+TS 및 TS 관련 항해 비용은 가능한 정확 문제 비용의 lower envelope로 계산한다.
+항로 밖 운하 경유 후보는 \texttt{CanalSailArc}로 유지하고, 운하 route bunker 비용도
+TS 관련 arc인 경우 동일한 lower-envelope 정책으로 계산한다. Canal fee는 입력상
+연월 기준이 없는 고정 비용이므로 lower envelope를 적용하지 않는다.
+운하 경유 가능 여부는 \texttt{mcf\_v5}와 동일하게
+\texttt{cost\_canal\_direction.csv}의 nonempty direction row로 정의한다.
+\end{abstract}
+
+\section{목적}
+
+정확한 원 문제에서는 TS 발생 시각이 고정되어 있지 않다. 반면 기존 MCF 계열 모형은
+TS 발생 시각을 정규 port stay의 직전 또는 직후로 고정한다(TS restriction). 이 제한 때문에
+기존 MCF 최적값은 정확한 원 문제의 최적값과 다를 수 있다.
+
+\texttt{mcf\_v6\_lb}는 정확한 원 문제를 직접 모델링하지 않는다. 대신 정확한 원
+문제에서 가능한 TS timing을 포함하도록 항해 시간 제약을 완화한 문제를 만든다.
+다만 현재 구현의 기본 설정은 실제 선박만 사용하는 모형이다. 따라서 lower bound
+statement는 가상 선박을 포함한 전체 feasible set inclusion으로 쓰지 않고, 다음
+가정하의 value inequality로만 해석한다.
+
+\begin{itemize}
+  \item TS time restriction 문제와 free-TS exact 문제 모두에서 가상 선박을 사용하지
+  않는 최적해가 존재한다.
+  \item 완화된 TS 시간으로 계산한 항해 가능 시간은 exact timing에서 필요한 항해
+  가능 시간보다 짧지 않으며, 항해 가능 시간이 길어질수록 필요한 속도와 bunker
+  consumption은 증가하지 않는다.
+  \item TS activation cost와 TS 관련 항해의 bunker price month attribution은 exact
+  가능한 비용의 lower envelope로 계산한다.
+  \item $z^{LB}$와 비교되는 값은 같은 MIP objective 기준이다. OCAM
+  evaluation total cost 기준의 certified bound라고 주장하려면 별도의 증명이 필요하다.
+\end{itemize}
+
+위 가정이 성립하면 minimization 기준에서
+\[
+  z^{LB}_{\mathrm{MIP}} \le z^{exact}_{\mathrm{MIP}}
+\]
+가 된다. 또한 TS restricted 문제의 feasible solution 비용 $z^{R}_{\mathrm{MIP}}$가
+같은 objective 기준으로 주어졌다면,
+\[
+  z^{R}_{\mathrm{MIP}} - z^{LB}_{\mathrm{MIP}}
+\]
+를 free-TS exact optimum에 대한 MIP objective gap의 상한으로 해석할 수
+있다.
+
+\begin{center}
+\begin{tabular}{@{}p{0.24\linewidth}p{0.31\linewidth}p{0.31\linewidth}@{}}
+\toprule
+구분 & 기존 TS time restriction MCF & \texttt{mcf\_v6\_lb} \\
+\midrule
+정확한 원 문제와의 관계
+& 정확한 TS timing feasible set에 추가 제약을 부과한다.
+& 정확한 TS timing feasible set을 포함하도록 항해 가능성을 완화한다. \\
+\addlinespace
+feasible set 관계
+& 실제 선박 최적해가 존재하는 경우 exact optimum의 상계 후보를 제공한다.
+& no-virtual optimality 및 lower-envelope 비용 가정하에서 exact optimum의 하계를 제공한다. \\
+\addlinespace
+minimization 최적값 관계
+& 같은 objective 기준에서 $z^{exact}_{\mathrm{MIP}} \le z^R_{\mathrm{MIP}}$
+& 같은 objective 기준에서 $z^{LB}_{\mathrm{MIP}} \le z^{exact}_{\mathrm{MIP}}$ \\
+\addlinespace
+해석
+& 실행 가능한 restricted schedule 비용을 제공한다.
+& 실행 가능성을 보장하지 않을 수 있는 lower bound 비용을 제공한다. \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\section{공통 구조}
+
+본 모형은 \texttt{mcf\_v5}와 같은 MIP 구조를 사용한다. 선박별 source-to-sink
+flow, service arc coverage, position activation, arc capacity, TS unit activation,
+TS in/out balance, dry dock category/linking 제약은 그대로 유지한다.
+
+차이는 network construction 단계에서 TS 관련 노드의 시간과 이 시간을 사용하는
+\texttt{SailArc} feasibility 계산에만 있다. 같은 항구를 잇는 경우에는 기존과
+같이 항해가 필요 없는 일반 \texttt{Arc}로 생성한다.
+
+현재 구현의 기본 설정에서는 가상 선박 commodity $v_0$를 최적화 모형에서 제외한다.
+즉 기본 모형의 commodity 집합은 실제 선박 집합 $\mathcal{V}^{R}$뿐이며, $v_0$의
+source node, target 종료 아크, wrap arc, flow 변수 및 virtual path 복원은 생성하지
+않는다. 이 설정은 코드의 \texttt{INCLUDE\_VIRTUAL\_VESSEL = False}에 대응한다.
+비교 실험을 위해 해당 옵션을 켜는 경우에만 \texttt{mcf\_v5}와 같은 $v_0$ commodity를
+추가한다.
+
+\section{가상 선박 옵션}
+
+\texttt{INCLUDE\_VIRTUAL\_VESSEL = True}로 설정하면 $v_0$를 포함한 모형을 구성할 수
+있다. 이 경우 $v_0$는 실제 재배치 선박이 아니라 service coverage를 위한 가상
+commodity이므로, 서로 다른 lane-proforma-position에 속한 두 노드 그룹을 직접 잇는
+base arc는 $v_0$의 아크 집합에서 제외한다. 이 제한은 서로 다른 항구 사이의
+\texttt{SailArc}뿐 아니라, 두 노드 그룹의 항구가 같아 네트워크 construction 단계에서
+일반 \texttt{Arc}로 생성된 same-port cross-lane arc에도 적용된다. $v_0$는 source에서
+각 lane-proforma-position의 inbound nodes로 직접 phase-in할 수 있으므로, cross-lane
+continuation arc가 없어도 가상 coverage 경로의 feasibility는 유지된다.
+
+또한 $v_0$가 사용하는 base arc의 한쪽 끝이라도 TS 관련 노드
+\[
+  \texttt{TSIB},\quad \texttt{TSIA},\quad \texttt{TSOB},\quad \texttt{TSOA}
+\]
+에 해당하면 해당 arc의 $v_0$ opportunity cost는 0으로 둔다. \texttt{mcf\_v6\_lb}는
+lower bound 생성을 위해 TS node time을 완화하므로, TS 관련 노드의 \texttt{in time}과
+\texttt{out time}이 경제적 체류시간을 나타내지 않을 수 있다. 특히 완화된
+\texttt{TSIA} 또는 \texttt{TSOB}에서는 내부 interval이 뒤집힐 수 있으므로, TS 관련
+arc에 $v_0$ opportunity cost를 부과하면 인위적인 음수 objective coefficient가
+생길 수 있다. 따라서 $v_0$가 켜진 경우에도 TS 관련 economic effect는 arc cost가
+아니라 TS activation 변수의 비용으로만 반영한다.
+
+\section{TS 시간 완화}
+
+정규 port stay $g$의 pilot-in 시작 시각을 $t^g_s$, pilot-out 종료 시각을
+$t^g_e$라고 한다. 같은 lane-position 안에서 $g$의 바로 이전 port stay를 $p(g)$,
+바로 다음 port stay를 $n(g)$라고 한다. 두 port stay $i,j$의 항구 사이 거리를
+$d_{ij}$라고 하고, 시간 단위가 hour일 때 $d_{ij}/20$은 20 knot로 항해할 때의
+최소 항해 시간이다.
+
+기존 MCF 계열 모형과 동일하게 환적 화물의 하역 시간과 선적 시간은 각각 6시간으로
+둔다. 이전 또는 다음 port stay가 존재하지 않아 아래 식을 정의할 수 없는 TS unit은
+exact feasible TS unit으로 보지 않는다.
+
+\begin{center}
+\renewcommand{\arraystretch}{1.2}
+\begin{tabularx}{\textwidth}{@{}p{0.16\textwidth}XX@{}}
+\toprule
+노드 & 기존 TS time restriction & \texttt{mcf\_v6\_lb} relaxation \\
+\midrule
+\texttt{PLTI}$(g)$
+& in: $t^g_s$, out: $t^g_s$
+& in: $t^g_s$, out: $t^g_s$ \\
+\addlinespace
+\texttt{PLTO}$(g)$
+& in: $t^g_e$, out: $t^g_e$
+& in: $t^g_e$, out: $t^g_e$ \\
+\addlinespace
+\texttt{TSIB}$(g)$
+& in: $t^g_s-6\mathrm{h}$, out: $t^g_s$
+& in: $t^g_s-6\mathrm{h}$, out: $t^g_s$ \\
+\addlinespace
+\texttt{TSOB}$(g)$
+& in: $t^g_s-36\mathrm{h}$, out: $t^g_s-30\mathrm{h}$
+& in: $t^g_s-36\mathrm{h}$,
+  out:
+  $\begin{aligned}[t]
+    \min\{&t^{p(g)}_e+d_{p(g),g}/20+6\mathrm{h},\\
+           &t^g_s-30\mathrm{h}\}
+  \end{aligned}$ \\
+\addlinespace
+\texttt{TSOA}$(g)$
+& in: $t^g_e$, out: $t^g_e+6\mathrm{h}$
+& in: $t^g_e$, out: $t^g_e+6\mathrm{h}$ \\
+\addlinespace
+\texttt{TSIA}$(g)$
+& in: $t^g_e+30\mathrm{h}$, out: $t^g_e+36\mathrm{h}$
+& in:
+  $\begin{aligned}[t]
+    \max\{&t^{n(g)}_s-d_{g,n(g)}/20-6\mathrm{h},\\
+           &t^g_e+30\mathrm{h}\}
+  \end{aligned}$,
+  out: $t^g_e+36\mathrm{h}$ \\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+\texttt{TSIA}의 in time은 고정 TS 시각 모형에서 쓰는 $t^g_e+30\mathrm{h}$보다
+빠르지 않다. \texttt{TSOB}의 out time은 고정 TS 시각 모형에서 쓰는
+$t^g_s-30\mathrm{h}$보다 늦지 않다. 따라서 변경된 TS 시간은 기존 고정 TS 시각
+모형에서 가능한 \texttt{SailArc}의 항해 가능 시간을 줄이지 않는다.
+
+\section{TS Activation Cost Lower Envelope}
+
+TS unit $k$의 activation cost는 relaxed TS node의 대표 시각으로 계산하지 않는다.
+TS-in node를 $\mathrm{TSI}_k$, TS-out node를 $\mathrm{TSO}_k$라 하고 각 node의
+in/out time을 $\tau^{in}$, $\tau^{out}$으로 쓴다. 환적 하역 시작 시각의 가능한
+month를 보수적으로 포함하기 위해 다음 window를 사용한다.
+\[
+  s_k^0 =
+  \min\left\{
+    \tau^{in}_{\mathrm{TSI}_k},
+    \tau^{out}_{\mathrm{TSI}_k},
+    \tau^{in}_{\mathrm{TSO}_k},
+    \tau^{out}_{\mathrm{TSO}_k}-6\mathrm{h}
+  \right\},
+\]
+\[
+  e_k^0 =
+  \max\left\{
+    \tau^{in}_{\mathrm{TSI}_k},
+    \tau^{out}_{\mathrm{TSI}_k},
+    \tau^{in}_{\mathrm{TSO}_k},
+    \tau^{out}_{\mathrm{TSO}_k}
+  \right\}.
+\]
+Planning horizon을 $[H_s,H_e]$라 하면
+\[
+  s_k = \max\{s_k^0,H_s\},\qquad
+  e_k = \min\{e_k^0,H_e\}
+\]
+로 둔다. $s_k>e_k$이면 해당 TS unit의 cost window가 planning horizon과 교차하지
+않으므로 네트워크 생성 데이터가 유효하지 않은 것으로 보고 에러를 발생시킨다.
+
+정확 문제에서 해당 TS unit의 환적 하역 시작 시각을 $\alpha$라고 할 때,
+\[
+  c^{LB}_k
+  =
+  \min_{\alpha\in [s_k,e_k]}
+  \mathrm{TSPrice}\bigl(\mathrm{lane}(k),\mathrm{port}(k),
+  \mathrm{yearmonth}(\alpha)\bigr)
+\]
+로 둔다. 구현은 $[s_k,e_k]$의 시작과 끝 사이에 등장하는 모든 year-month를 포함한다.
+어떤 year-month의 TS price가 입력 데이터에 없으면 임의 fallback을 사용하지 않고
+에러를 발생시킨다.
+
+\section{TS-Related Sailing Cost Lower Envelope}
+
+완화된 \texttt{TSIA}, \texttt{TSOB} node time은 항해 feasibility를 완화하기 위한
+인공 시간이다. 따라서 이 시각의 year-month를 그대로 bunker price month로 사용하면
+exact 가능한 항해 비용보다 큰 비용이 부과될 수 있다. 이를 피하기 위해 한쪽 끝이
+TS 관련 노드인 \texttt{SailArc} 또는 \texttt{HorizonSailArc}의 항해 비용은 입력
+데이터에 존재하는 bunker price year-month 전체에 대해 계산한 비용의 최솟값으로
+둔다. 이는 month attribution에 대한 lower envelope이며, TS timing relaxation의
+경제 비용이 exact 비용보다 커지는 것을 방지하기 위한 보수적 처리이다.
+
+각 year-month에서의 bunker price 계산은 \texttt{mcf\_v5}의 MIP objective와 같은
+가격 귀속 규칙을 사용한다. 즉 해당 year-month, lane, fuel type의 lane-specific
+price가 있으면 그 값을 쓰고, 없으면 같은 year-month와 fuel type에 대해 입력 데이터에
+존재하는 가격들의 산술평균을 쓴다. 따라서 TS 관련 항해의 lower-envelope 비용은
+``\texttt{mcf\_v5}와 동일한 bunker price convention으로 각 가능한 month의 항해
+비용을 계산한 뒤 그 최솟값을 취한 값''이다. 이 lower bound statement는 exact 문제도
+같은 bunker price convention을 사용한다는 조건하에서 해석한다.
+
+\section{SailArc Feasibility}
+
+서로 다른 항구를 잇는 후보 아크 $a=(u,v)$에 대해 거리는 기존과 같이
+$d(u,v)$를 사용한다. 항해 가능 시간은 변경된 노드 시간을 사용하여
+\[
+  s(u,v)=\tau^{in}_v-\tau^{out}_u
+\]
+로 계산한다. 후보 아크는
+\[
+  s(u,v)\ge 0,\qquad \frac{d(u,v)}{s(u,v)} \le 20
+\]
+을 만족하는 경우에만 \texttt{SailArc}로 생성한다. 같은 항구를 잇는 후보 아크는
+항해가 필요 없으므로 기존과 같이 일반 \texttt{Arc}로 생성한다.
+
+\section{실행 결과와 비교 기준}
+
+\texttt{mcf\_v6\_lb}는 실행 결과로 feasible vessel schedule을 반환하지 않는다.
+구현상 알고리즘의 반환 객체는 \texttt{LowerBoundResult}이며, orchestration layer는
+이 결과를 solution validation, OCAM evaluation, postprocessing 대상으로 취급하지
+않는다. 저장되는 값은 lower bound 값과 최적화 모형의 보조 정보이다. 현재 저장
+형식에는 lower bound 값, Gurobi objective bound, MIP gap, solver status, solution
+count, model name이 포함된다.
+
+비교 시 absolute gap은
+\[
+  z^{v4}-z^{LB}
+\]
+로 계산하고, relative gap은
+\[
+  \frac{z^{v4}-z^{LB}}{|z^{v4}|}
+\]
+로 계산한다. \texttt{mcf\_v6\_lb} 모형이 \texttt{OPTIMAL} 상태로 종료되고 저장된
+MIP gap이 $0$이면 해당 lower bound는 relaxation 모형의 최적값이다.
+이 값은 feasible schedule cost가 아니므로 \texttt{mcf\_v5} solution의 대체 결과가
+아니라, restricted feasible solution이 같은 MIP objective 기준의 free-TS
+exact optimum에서 얼마나 멀 수 있는지를 평가하기 위한 기준값으로 사용한다.
+
+\end{document}

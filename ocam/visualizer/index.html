@@ -1,0 +1,4012 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>OCAM Solution Visualizer</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --ink: #172026;
+      --muted: #66727e;
+      --line: #d9e1e7;
+      --panel: #ffffff;
+      --page: #f5f7f9;
+      --brand: #176f86;
+      --brand-strong: #0f5568;
+      --ok: #12845f;
+      --bad: #bf3b3b;
+      --warn: #b06b00;
+      --port: #2775b6;
+      --sail-in: #2f9278;
+      --sail-out: #8b5fbf;
+      --phase: #2775b6;
+      --shipyard: #c26b4f;
+      --idle: #7a8793;
+      --shadow: 0 10px 30px rgba(23, 32, 38, 0.08);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      min-width: 1120px;
+      background: var(--page);
+      color: var(--ink);
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      letter-spacing: 0;
+    }
+
+    button,
+    input,
+    select {
+      font: inherit;
+    }
+
+    button {
+      border: 1px solid var(--line);
+      background: var(--panel);
+      color: var(--ink);
+      border-radius: 8px;
+      min-height: 38px;
+      padding: 0 12px;
+      cursor: pointer;
+    }
+
+    button:hover {
+      border-color: var(--brand);
+    }
+
+    button.primary {
+      border-color: var(--brand);
+      background: var(--brand);
+      color: white;
+      font-weight: 700;
+    }
+
+    input,
+    select {
+      width: 100%;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: white;
+      color: var(--ink);
+      min-height: 38px;
+      padding: 0 10px;
+    }
+
+    input[type="range"] {
+      padding: 0;
+      accent-color: var(--brand);
+    }
+
+    label {
+      display: grid;
+      gap: 6px;
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 700;
+      text-transform: uppercase;
+    }
+
+    .app {
+      min-height: 100vh;
+      display: grid;
+      grid-template-rows: auto 1fr;
+    }
+
+    .topbar {
+      display: grid;
+      grid-template-columns: auto 1fr auto;
+      gap: 18px;
+      align-items: center;
+      padding: 14px 20px;
+      background: #fbfcfd;
+      border-bottom: 1px solid var(--line);
+      position: sticky;
+      top: 0;
+      z-index: 10;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-weight: 800;
+      font-size: 18px;
+      white-space: nowrap;
+    }
+
+    .mark {
+      display: grid;
+      place-items: center;
+      width: 34px;
+      height: 34px;
+      border-radius: 8px;
+      background: #dff2ee;
+      color: var(--brand-strong);
+      font-weight: 900;
+    }
+
+    .picker {
+      display: grid;
+      grid-template-columns: max-content minmax(220px, 1fr);
+      gap: 12px;
+      align-items: end;
+    }
+
+    .source-switch {
+      display: inline-flex;
+      padding: 4px;
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      background: #ffffff;
+      gap: 4px;
+      width: fit-content;
+    }
+
+    .source-option {
+      min-width: 0;
+      min-height: 34px;
+      border: 0;
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: 800;
+      background: transparent;
+      color: var(--muted);
+      padding: 0 12px;
+    }
+
+    .source-option.active {
+      background: #e9f5f2;
+      color: var(--brand-strong);
+    }
+
+    .actions {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+    }
+
+    .file-input {
+      display: none;
+    }
+
+    .layout {
+      display: grid;
+      grid-template-columns: 300px minmax(0, 1fr);
+      min-height: 0;
+    }
+
+    .sidebar {
+      border-right: 1px solid var(--line);
+      background: #ffffff;
+      padding: 16px;
+      overflow: auto;
+    }
+
+    .sidebar-head {
+      display: grid;
+      gap: 10px;
+      margin-bottom: 14px;
+    }
+
+    .search-row {
+      display: grid;
+      grid-template-columns: 1fr 38px;
+      gap: 8px;
+    }
+
+    .icon-button {
+      display: grid;
+      place-items: center;
+      padding: 0;
+      font-weight: 900;
+    }
+
+    .sidebar-section {
+      display: grid;
+      gap: 8px;
+    }
+
+    .sidebar-label {
+      color: var(--muted);
+      font-size: 11px;
+      font-weight: 900;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    .run-list {
+      display: grid;
+      gap: 8px;
+    }
+
+    .run-item {
+      display: grid;
+      gap: 7px;
+      width: 100%;
+      text-align: left;
+      padding: 10px;
+      border-radius: 8px;
+    }
+
+    .run-item.active {
+      border-color: var(--brand);
+      background: #edf8f6;
+    }
+
+    .run-title {
+      display: flex;
+      justify-content: space-between;
+      gap: 8px;
+      font-weight: 800;
+    }
+
+    .run-sub {
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .main {
+      overflow: auto;
+      padding: 18px;
+      display: grid;
+      gap: 16px;
+      align-content: start;
+    }
+
+    .empty {
+      min-height: 470px;
+      display: grid;
+      place-items: center;
+      text-align: center;
+      color: var(--muted);
+      border: 1px dashed #b7c5ce;
+      border-radius: 8px;
+      background: white;
+    }
+
+    .summary {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+      gap: 10px;
+    }
+
+    .metric {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 12px;
+      min-width: 0;
+      box-shadow: var(--shadow);
+    }
+
+    .metric-label {
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 800;
+      text-transform: uppercase;
+      white-space: nowrap;
+    }
+
+    .metric-value {
+      margin-top: 7px;
+      font-size: 20px;
+      font-weight: 850;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .metric-value-row {
+      display: flex;
+      gap: 8px;
+      align-items: baseline;
+      min-width: 0;
+    }
+
+    .metric-value-row .metric-value {
+      min-width: 0;
+    }
+
+    .metric-compact {
+      flex: 0 0 auto;
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 850;
+      white-space: nowrap;
+    }
+
+    .status-ok {
+      color: var(--ok);
+    }
+
+    .status-bad {
+      color: var(--bad);
+    }
+
+    .status-warn {
+      color: var(--warn);
+    }
+
+    .grid-two {
+      display: grid;
+      grid-template-columns: minmax(350px, 0.75fr) minmax(440px, 1.25fr);
+      gap: 16px;
+      align-items: start;
+    }
+
+    .panel {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      box-shadow: var(--shadow);
+      min-width: 0;
+    }
+
+    .panel-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 14px;
+      padding: 13px 14px;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .panel-title {
+      font-weight: 850;
+      font-size: 15px;
+    }
+
+    .panel-body {
+      padding: 14px;
+      min-width: 0;
+    }
+
+    .tabs {
+      display: flex;
+      gap: 6px;
+      align-items: center;
+    }
+
+    .tab {
+      min-height: 32px;
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: 800;
+    }
+
+    .tab.active {
+      background: #e9f5f2;
+      border-color: var(--brand);
+      color: var(--brand-strong);
+    }
+
+    .chart {
+      width: 100%;
+      min-height: 280px;
+    }
+
+    .bar-row {
+      display: grid;
+      grid-template-columns: minmax(120px, 170px) 1fr auto;
+      gap: 10px;
+      align-items: center;
+      margin: 9px 0;
+    }
+
+    .bar-row.detail {
+      margin-top: -2px;
+      margin-bottom: 7px;
+    }
+
+    .bar-row[data-cost-key] {
+      cursor: default;
+    }
+
+    .bar-name {
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      font-weight: 700;
+      font-size: 13px;
+    }
+
+    .bar-row.detail .bar-name {
+      padding-left: 18px;
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 750;
+    }
+
+    .bar-track {
+      height: 16px;
+      background: #edf1f4;
+      border-radius: 8px;
+      overflow: hidden;
+      position: relative;
+    }
+
+    .bar-fill {
+      height: 100%;
+      background: var(--brand);
+      min-width: 2px;
+    }
+
+    .bar-fill.segment {
+      position: absolute;
+      top: 0;
+      min-width: 0;
+    }
+
+    .bar-fill.bunker-detail-0 {
+      background: #2f9278;
+    }
+
+    .bar-fill.bunker-detail-1 {
+      background: #2775b6;
+    }
+
+    .bar-fill.bunker-detail-2 {
+      background: #8b5fbf;
+    }
+
+    .bar-value {
+      color: var(--muted);
+      font-size: 12px;
+      font-variant-numeric: tabular-nums;
+      min-width: 120px;
+      text-align: right;
+    }
+
+    .kpi-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+      gap: 10px;
+    }
+
+    .kpi-card {
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 11px;
+      background: #fbfcfd;
+      min-width: 0;
+    }
+
+    .kpi-card.cost {
+      background: #f8fbff;
+    }
+
+    .kpi-card.operational {
+      background: #f8fcfa;
+    }
+
+    .kpi-label {
+      color: var(--muted);
+      font-size: 11px;
+      font-weight: 850;
+      text-transform: uppercase;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .kpi-value {
+      margin-top: 7px;
+      font-size: 20px;
+      font-weight: 900;
+      font-variant-numeric: tabular-nums;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .kpi-sub {
+      margin-top: 5px;
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.35;
+      overflow-wrap: anywhere;
+    }
+
+    .lane-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(92px, 1fr));
+      gap: 8px;
+    }
+
+    .lane-pill {
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 9px;
+      background: #fbfcfd;
+    }
+
+    .lane-pill strong {
+      display: block;
+      font-size: 14px;
+    }
+
+    .lane-pill span {
+      display: block;
+      margin-top: 4px;
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .position-declare-grid {
+      display: grid;
+      gap: 10px;
+    }
+
+    .position-declare-row {
+      display: grid;
+      grid-template-columns: minmax(150px, 220px) 1fr minmax(110px, auto);
+      gap: 12px;
+      align-items: start;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #fbfcfd;
+      padding: 10px;
+    }
+
+    .position-declare-title {
+      font-weight: 850;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .position-declare-sub {
+      margin-top: 4px;
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.35;
+    }
+
+    .position-chip-list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+
+    .position-chip {
+      min-width: 30px;
+      height: 26px;
+      display: inline-grid;
+      place-items: center;
+      border: 1px solid #cbd6dd;
+      border-radius: 8px;
+      background: white;
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 850;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .position-chip.selected {
+      border-color: var(--brand);
+      background: #dff2ee;
+      color: var(--brand-strong);
+    }
+
+    .position-chip.unavailable {
+      opacity: 0.38;
+      background: #f0f3f5;
+    }
+
+    .position-declare-count {
+      text-align: right;
+      font-weight: 850;
+      white-space: nowrap;
+    }
+
+    .algorithm-strip {
+      display: grid;
+      gap: 10px;
+    }
+
+    .algorithm-author-list {
+      display: grid;
+      gap: 10px;
+    }
+
+    .algorithm-author-row {
+      display: grid;
+      grid-template-columns: minmax(96px, 128px) minmax(0, 1fr);
+      gap: 14px;
+      align-items: start;
+    }
+
+    .algorithm-author {
+      display: grid;
+      align-content: start;
+      gap: 4px;
+      border: 0;
+      border-right: 3px solid var(--brand);
+      border-radius: 0;
+      background: transparent;
+      padding: 10px 12px 10px 0;
+      min-width: 0;
+      height: 96px;
+      overflow: hidden;
+    }
+
+    .algorithm-author-name {
+      font-size: 14px;
+      font-weight: 900;
+      overflow-wrap: anywhere;
+    }
+
+    .algorithm-author-best {
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.35;
+      overflow-wrap: anywhere;
+    }
+
+    .algorithm-row-scroll {
+      display: flex;
+      gap: 10px;
+      align-items: flex-start;
+      min-width: 0;
+      overflow-x: auto;
+      padding-bottom: 4px;
+      scrollbar-gutter: stable;
+    }
+
+    .algorithm-card {
+      display: grid;
+      gap: 6px;
+      flex: 0 0 230px;
+      width: 230px;
+      height: 96px;
+      min-width: 0;
+      align-content: start;
+      text-align: left;
+      padding: 12px;
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      background: #ffffff;
+      overflow: hidden;
+    }
+
+    .algorithm-card.active {
+      border-color: var(--brand);
+      background: #edf8f6;
+    }
+
+    .algorithm-card-name {
+      display: block;
+      min-width: 0;
+      font-size: 14px;
+      font-weight: 850;
+      line-height: 1.25;
+      white-space: normal;
+      overflow-wrap: anywhere;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+
+    .algorithm-card-meta {
+      min-width: 0;
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.4;
+      white-space: normal;
+      overflow-wrap: anywhere;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+
+    .timeline-controls {
+      display: grid;
+      grid-template-columns: minmax(160px, 220px) minmax(130px, 160px) minmax(150px, 180px) minmax(150px, 180px) minmax(220px, 1fr) auto;
+      gap: 10px;
+      align-items: end;
+      margin-bottom: 12px;
+    }
+
+    .fit-button {
+      min-width: 74px;
+      font-weight: 800;
+    }
+
+    .zoom-control {
+      display: grid;
+      grid-template-columns: 1fr 48px;
+      gap: 8px;
+      align-items: center;
+    }
+
+    .zoom-value {
+      color: var(--ink);
+      font-size: 12px;
+      font-weight: 850;
+      text-align: right;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .legend {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      align-items: center;
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+
+    .dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 3px;
+      background: var(--idle);
+    }
+
+    .timeline {
+      overflow: auto;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #ffffff;
+      max-height: 570px;
+    }
+
+    .timeline-grid {
+      min-width: 980px;
+      transition: min-width 80ms linear;
+    }
+
+    .time-axis,
+    .vessel-row {
+      display: grid;
+      grid-template-columns: 150px 1fr;
+      border-bottom: 1px solid #edf1f4;
+    }
+
+    .timeline-grid.lane-view .time-axis,
+    .timeline-grid.lane-view .vessel-row {
+      grid-template-columns: 230px 1fr;
+    }
+
+    .time-axis {
+      position: sticky;
+      top: 0;
+      background: #fbfcfd;
+      z-index: 5;
+      font-size: 12px;
+      color: var(--muted);
+      font-weight: 800;
+    }
+
+    .axis-label,
+    .vessel-label {
+      position: sticky;
+      left: 0;
+      z-index: 20;
+      background: #ffffff;
+      padding: 9px 10px;
+      border-right: 1px solid #edf1f4;
+      box-shadow: 6px 0 10px rgba(23, 32, 38, 0.04);
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .axis-label {
+      z-index: 30;
+      background: #fbfcfd;
+    }
+
+    .lane-label-main {
+      display: block;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      font-weight: 850;
+    }
+
+    .lane-label-sub {
+      display: block;
+      margin-top: 3px;
+      color: var(--muted);
+      font-size: 11px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .axis-track,
+    .event-track {
+      position: relative;
+      min-height: 48px;
+      overflow: hidden;
+    }
+
+    .virtual-band {
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      background: #ead3d6;
+      z-index: 0;
+      cursor: default;
+    }
+
+    .tick {
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      border-left: 1px solid #edf1f4;
+      pointer-events: none;
+    }
+
+    .guide-line {
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      width: 1px;
+      z-index: 1;
+      pointer-events: none;
+    }
+
+    .guide-line.planning {
+      background: rgba(102, 114, 126, 0.45);
+    }
+
+    .guide-line.service {
+      background: rgba(23, 111, 134, 0.42);
+    }
+
+    .guide-label {
+      position: absolute;
+      top: 2px;
+      left: 4px;
+      color: var(--muted);
+      font-size: 10px;
+      font-weight: 800;
+      white-space: nowrap;
+      background: rgba(255, 255, 255, 0.78);
+      padding: 0 3px;
+      border-radius: 3px;
+    }
+
+    .tick span {
+      position: absolute;
+      top: 9px;
+      left: 5px;
+      white-space: nowrap;
+    }
+
+    .event {
+      position: absolute;
+      top: 18px;
+      height: 21px;
+      border-radius: 5px;
+      min-width: 0;
+      color: white;
+      font-size: 11px;
+      font-weight: 800;
+      padding: 3px 5px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      cursor: default;
+    }
+
+    .event.ts-chain-member {
+      outline: 2px solid rgba(138, 107, 34, 0.42);
+      outline-offset: 1px;
+    }
+
+    .event.PORT_STAY {
+      background: var(--port);
+    }
+
+    .event.INLANE_SAIL,
+    .event.sail-in {
+      background: var(--sail-in);
+    }
+
+    .event.OUTLANE_SAIL,
+    .event.sail-out {
+      background: var(--sail-out);
+    }
+
+    .event.PHASE_IN,
+    .event.PHASE_OUT {
+      background: var(--phase);
+    }
+
+    .event.DRY_DOCK,
+    .event.DELIVERY,
+    .event.REDELIVERY {
+      background: var(--shipyard);
+    }
+
+    .event.TRANSSHIPMENT_UNLOAD,
+    .event.TRANSSHIPMENT_LOAD {
+      background: #8a6b22;
+    }
+
+    .event.IDLE {
+      background: var(--idle);
+    }
+
+    .point-event {
+      position: absolute;
+      top: 3px;
+      transform: translateX(-50%);
+      display: grid;
+      justify-items: center;
+      gap: 1px;
+      min-width: 38px;
+      color: var(--ink);
+      font-size: 10px;
+      font-weight: 900;
+      cursor: default;
+      z-index: 3;
+    }
+
+    .point-event.micro-interval {
+      top: 18px;
+      min-width: 10px;
+    }
+
+    .point-event.micro-interval .point-tag,
+    .point-event.ts-chain-member .point-tag {
+      display: none;
+    }
+
+    .point-event.ts-chain-member .point-tag {
+      border-color: rgba(138, 107, 34, 0.42);
+      background: #fff6d8;
+      color: #745600;
+    }
+
+    .point-tag {
+      padding: 1px 4px;
+      border: 1px solid rgba(23, 32, 38, 0.14);
+      border-radius: 4px;
+      background: white;
+      box-shadow: 0 2px 8px rgba(23, 32, 38, 0.08);
+      white-space: nowrap;
+    }
+
+    .point-pin {
+      width: 9px;
+      height: 9px;
+      border-radius: 50%;
+      border: 2px solid white;
+      background: var(--phase);
+      box-shadow: 0 0 0 1px rgba(23, 32, 38, 0.16);
+    }
+
+    .point-event.micro-interval .point-pin {
+      width: 4px;
+      height: 18px;
+      border-radius: 2px;
+    }
+
+    .point-event.DELIVERY .point-pin,
+    .point-event.REDELIVERY .point-pin {
+      background: var(--shipyard);
+    }
+
+    .point-event.TRANSSHIPMENT_UNLOAD .point-pin,
+    .point-event.TRANSSHIPMENT_LOAD .point-pin {
+      background: #8a6b22;
+    }
+
+    .chain-band {
+      display: none;
+    }
+
+    .chain-band::after {
+      content: none;
+    }
+
+    .chain-callout {
+      position: absolute;
+      top: 2px;
+      transform: translateX(-50%);
+      z-index: 4;
+      max-width: 78px;
+      border: 1px solid rgba(138, 107, 34, 0.32);
+      border-radius: 5px;
+      background: #fff6d8;
+      color: #745600;
+      box-shadow: 0 3px 8px rgba(23, 32, 38, 0.1);
+      padding: 1px 5px;
+      font-size: 10px;
+      font-weight: 900;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      cursor: default;
+    }
+
+    .canal-callout {
+      position: absolute;
+      top: 2px;
+      transform: translateX(-50%);
+      z-index: 4;
+      max-width: 72px;
+      border: 1px solid rgba(23, 111, 134, 0.28);
+      border-radius: 5px;
+      background: #e7f4f7;
+      color: var(--brand-strong);
+      box-shadow: 0 3px 8px rgba(23, 32, 38, 0.08);
+      padding: 1px 5px;
+      font-size: 10px;
+      font-weight: 900;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      cursor: default;
+    }
+
+    .tooltip {
+      position: fixed;
+      z-index: 100;
+      width: min(360px, calc(100vw - 24px));
+      border: 1px solid #c7d3da;
+      border-radius: 8px;
+      background: #ffffff;
+      color: var(--ink);
+      box-shadow: 0 18px 42px rgba(23, 32, 38, 0.18);
+      padding: 12px;
+      pointer-events: none;
+    }
+
+    .tooltip-title {
+      display: flex;
+      justify-content: space-between;
+      gap: 10px;
+      align-items: center;
+      font-size: 14px;
+      font-weight: 900;
+      margin-bottom: 9px;
+    }
+
+    .tooltip-status {
+      border-radius: 5px;
+      padding: 3px 6px;
+      background: #edf1f4;
+      color: var(--muted);
+      font-size: 11px;
+      font-weight: 900;
+      white-space: nowrap;
+    }
+
+    .tooltip-grid {
+      display: grid;
+      grid-template-columns: 92px 1fr;
+      gap: 6px 10px;
+      font-size: 12px;
+      line-height: 1.35;
+    }
+
+    .tooltip-key {
+      color: var(--muted);
+      font-weight: 800;
+    }
+
+    .tooltip-value {
+      min-width: 0;
+      overflow-wrap: anywhere;
+      font-weight: 650;
+    }
+
+    .tooltip-line {
+      grid-column: 1 / -1;
+      min-width: 0;
+      overflow-wrap: anywhere;
+      font-weight: 750;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      table-layout: fixed;
+    }
+
+    th,
+    td {
+      border-bottom: 1px solid #edf1f4;
+      padding: 9px 8px;
+      text-align: left;
+      vertical-align: top;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      font-size: 13px;
+    }
+
+    th {
+      color: var(--muted);
+      font-size: 12px;
+      text-transform: uppercase;
+      background: #fbfcfd;
+    }
+
+    .log-box,
+    .json-box {
+      margin: 0;
+      max-height: 420px;
+      overflow: auto;
+      background: #101820;
+      color: #d7e7ef;
+      border-radius: 8px;
+      padding: 13px;
+      font-family: "SFMono-Regular", Consolas, monospace;
+      font-size: 12px;
+      line-height: 1.5;
+      white-space: pre-wrap;
+    }
+
+    .hide {
+      display: none !important;
+    }
+
+    .notice {
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.5;
+    }
+
+    @media (max-width: 900px) {
+      body {
+        min-width: 0;
+      }
+
+      .topbar,
+      .layout,
+      .grid-two,
+      .summary {
+        grid-template-columns: 1fr;
+      }
+
+      .picker,
+      .timeline-controls {
+        grid-template-columns: 1fr;
+      }
+
+      .sidebar {
+        border-right: 0;
+        border-bottom: 1px solid var(--line);
+        max-height: 320px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <header class="topbar">
+      <div class="brand"><span class="mark">O</span><span>OCAM Visualizer</span></div>
+      <div class="picker">
+        <label>Source
+          <div id="sourceMode" class="source-switch" role="tablist" aria-label="Source mode">
+            <button type="button" class="source-option active" data-source-mode="runs">Runs</button>
+            <button type="button" class="source-option" data-source-mode="leaderboard">Leaderboard</button>
+          </div>
+        </label>
+      </div>
+      <div class="actions">
+        <a href="schedule_table.html" style="font-size:13px;font-weight:700;color:var(--brand);text-decoration:none;margin-right:4px;" title="Schedule Table 보기">📋 Table</a>
+        <button id="openDirButton" class="primary" title="outputs 폴더 선택">📂</button>
+        <label for="folderInput">
+          <button id="fallbackButton" type="button" title="브라우저 폴더 업로드 선택">＋</button>
+        </label>
+        <input id="folderInput" class="file-input" type="file" webkitdirectory directory multiple>
+      </div>
+    </header>
+
+    <div class="layout">
+      <aside class="sidebar">
+        <div class="sidebar-head">
+          <div class="search-row">
+            <input id="runSearch" type="search" placeholder="260420, virtual, error">
+            <button id="refreshButton" class="icon-button" title="다시 읽기">↻</button>
+          </div>
+          <div id="sourceNotice" class="notice">outputs 선택 대기 중</div>
+        </div>
+        <section class="sidebar-section">
+          <div id="runListLabel" class="sidebar-label">Runs</div>
+          <div id="runList" class="run-list"></div>
+        </section>
+      </aside>
+
+      <main id="main" class="main">
+        <section class="empty">
+          <div>
+            <h1>결과 폴더를 선택하세요</h1>
+            <p>상단에서 source 모드를 바꿔 `outputs`의 실행 결과와 `outputs/leaderboard`의 best 결과를 함께 탐색할 수 있습니다.</p>
+          </div>
+        </section>
+      </main>
+    </div>
+  </div>
+
+  <script>
+    const state = {
+      sourceMode: "runs",
+      sourceName: "",
+      directoryHandle: null,
+      autoSourceUrl: "",
+      runs: [],
+      selectedRun: "",
+      selectedAlgorithm: "",
+      selectedLowerBound: "",
+      vesselFilter: "",
+      activeTab: "timeline",
+      timelineView: "vessel",
+      timelineMode: "all",
+      sortMode: "vessel",
+      timelineZoom: 1.8,
+      tooltipEvent: null,
+      eventLookup: new Map(),
+    };
+
+    const SOURCE_MODES = {
+      runs: {
+        label: "Runs",
+        rootDirName: "outputs",
+        groupLabel: "Run",
+      },
+      leaderboard: {
+        label: "Leaderboard",
+        rootDirName: "outputs",
+        childDirName: "leaderboard",
+        groupLabel: "Scenario",
+      },
+    };
+
+    const els = {
+      sourceMode: document.getElementById("sourceMode"),
+      openDirButton: document.getElementById("openDirButton"),
+      fallbackButton: document.getElementById("fallbackButton"),
+      folderInput: document.getElementById("folderInput"),
+      refreshButton: document.getElementById("refreshButton"),
+      runSearch: document.getElementById("runSearch"),
+      sourceNotice: document.getElementById("sourceNotice"),
+      runListLabel: document.getElementById("runListLabel"),
+      runList: document.getElementById("runList"),
+      main: document.getElementById("main"),
+    };
+
+    const EVENT_TIME_FIELDS = [
+      ["pilot_in_start", "pilot_out_end"],
+      ["berthing_start", "berthing_end"],
+      ["sea_sail_start", "sea_sail_end"],
+      ["phase_in_time", "phase_in_time"],
+      ["phase_out_time", "phase_out_time"],
+      ["phase_in_start", "phase_in_end"],
+      ["phase_out_start", "phase_out_end"],
+      ["dock_in", "dock_out"],
+      ["dry_dock_start", "dry_dock_end"],
+      ["idle_start", "idle_end"],
+      ["delivery_time", "delivery_time"],
+      ["redelivery_time", "redelivery_time"],
+      ["delivery_start", "delivery_end"],
+      ["redelivery_start", "redelivery_end"],
+      ["unload_start", "unload_end"],
+      ["load_start", "load_end"],
+    ];
+
+    const CANAL_PORTS = new Set(["PAPCA", "EGSUZ", "EGSCA"]);
+
+    const COST_LABELS = {
+      total_cost: "Total Cost",
+      bunker_cost: "Bunker Cost",
+      bunker_cost_by_inlane_sail: "By InLaneSail",
+      bunker_cost_by_port_stay: "By PortStay",
+      bunker_cost_by_outlane_sail: "By OutLaneSail",
+      canal_fee_cost: "Canal Fee",
+      transshipment_cost: "TS Cost",
+      opportunity_cost: "Opportunity Cost",
+      charter_cost: "Charter cost",
+      vessel_cost: "Vessel cost",
+      port_cost: "Port cost",
+      penalty_cost: "Penalty cost",
+    };
+
+    const COST_DESCRIPTIONS = {
+      total_cost: "Objective total cost",
+      bunker_cost: "Sailing bunker cost from the solution output",
+      bunker_cost_by_inlane_sail: "Bunker cost from in-lane sailing events",
+      bunker_cost_by_port_stay: "Bunker cost from port stay pilot-in/out time",
+      bunker_cost_by_outlane_sail: "Bunker cost from out-lane sailing events",
+      canal_fee_cost: "Canal fee from the solution output",
+      transshipment_cost: "Transshipment cost from the solution output",
+      opportunity_cost: "Virtual vessel opportunity cost from the solution output",
+      charter_cost: "Charter-related vessel cost",
+      vessel_cost: "Vessel operating cost",
+      port_cost: "Port stay cost",
+      penalty_cost: "Penalty cost",
+    };
+
+    els.sourceMode.querySelectorAll("[data-source-mode]").forEach((button) => {
+      button.addEventListener("click", async () => {
+        const nextMode = button.dataset.sourceMode;
+        if (!nextMode || nextMode === state.sourceMode) return;
+        state.sourceMode = nextMode;
+        state.directoryHandle = null;
+        state.autoSourceUrl = "";
+        state.sourceName = "";
+        state.runs = [];
+        state.selectedRun = "";
+        state.selectedAlgorithm = "";
+        state.selectedLowerBound = "";
+        els.folderInput.value = "";
+        setPickerAffordances();
+        await initializeSource();
+      });
+    });
+    els.openDirButton.addEventListener("click", openDirectory);
+    els.fallbackButton.addEventListener("click", () => els.folderInput.click());
+    els.folderInput.addEventListener("change", loadFromFileInput);
+    els.refreshButton.addEventListener("click", refreshSource);
+    els.runSearch.addEventListener("input", renderRunList);
+    setPickerAffordances();
+    initializeSource();
+
+    async function initializeSource() {
+      setEmptyMessage();
+      setSourceNoticeWaiting();
+      const restored = await tryLoadSavedDirectory();
+      if (restored) return;
+      const autoLoaded = await tryLoadRelativeSourceDir();
+      if (autoLoaded) return;
+    }
+
+    function currentSourceMode() {
+      return SOURCE_MODES[state.sourceMode] || SOURCE_MODES.runs;
+    }
+
+    function sourceHandleStorageKey() {
+      return "outputs_handle";
+    }
+
+    function setPickerAffordances() {
+      const source = currentSourceMode();
+      els.sourceMode.querySelectorAll("[data-source-mode]").forEach((button) => {
+        button.classList.toggle("active", button.dataset.sourceMode === state.sourceMode);
+      });
+      els.runListLabel.textContent = source.groupLabel === "Scenario" ? "Scenarios" : "Runs";
+      els.openDirButton.title = "outputs 폴더 선택";
+      els.fallbackButton.title = "outputs 폴더 업로드 선택";
+    }
+
+    function setSourceNoticeWaiting() {
+      const source = currentSourceMode();
+      const target = source.childDirName ? `${source.rootDirName}/${source.childDirName}` : source.rootDirName;
+      els.sourceNotice.textContent = `outputs를 선택하세요. ${target}를 자동으로 읽습니다.`;
+    }
+
+    async function openDirectory() {
+      if (!window.showDirectoryPicker) {
+        els.folderInput.click();
+        return;
+      }
+      const handle = await window.showDirectoryPicker({ mode: "read" });
+      state.directoryHandle = handle;
+      state.autoSourceUrl = "";
+      state.sourceName = handle.name;
+      await saveDirectoryHandle(handle);
+      await loadFromDirectoryHandle(handle);
+    }
+
+    async function refreshSource() {
+      if (state.directoryHandle) {
+        await loadFromDirectoryHandle(state.directoryHandle);
+      } else if (state.autoSourceUrl) {
+        await loadFromHttpDirectory(state.autoSourceUrl);
+      } else if (els.folderInput.files.length) {
+        await loadFromFileInput();
+      } else {
+        await initializeSource();
+      }
+    }
+
+    async function tryLoadSavedDirectory() {
+      if (!("showDirectoryPicker" in window)) return false;
+      const handle = await readSavedDirectoryHandle();
+      if (!handle) return false;
+      const permission = await verifyDirectoryPermission(handle, false);
+      if (!permission) return false;
+      state.directoryHandle = handle;
+      state.autoSourceUrl = "";
+      state.sourceName = handle.name;
+      await loadFromDirectoryHandle(handle);
+      return state.runs.length > 0;
+    }
+
+    async function tryLoadRelativeSourceDir() {
+      if (location.protocol === "file:") return false;
+      const outputUrl = new URL("../outputs/", location.href).href;
+      try {
+        await loadFromHttpDirectory(outputUrl);
+        return state.runs.length > 0;
+      } catch {
+        return false;
+      }
+    }
+
+    async function loadFromHttpDirectory(outputUrl) {
+      state.directoryHandle = null;
+      state.autoSourceUrl = outputUrl;
+      state.sourceName = "../outputs";
+      const source = currentSourceMode();
+      const directoryUrl = source.childDirName ? new URL(`${source.childDirName}/`, outputUrl).href : outputUrl;
+      const runUrls = await listDirectoryUrls(directoryUrl, "directory");
+      const files = [];
+      for (const runUrl of runUrls) {
+        const runName = decodeURIComponent(runUrl.pathname.split("/").filter(Boolean).at(-1) || "");
+        const fileUrls = await listDirectoryUrls(runUrl.href, "file");
+        for (const fileUrl of fileUrls) {
+          const fileName = decodeURIComponent(fileUrl.pathname.split("/").pop() || "");
+          files.push({
+            path: `${runName}/${fileName}`,
+            name: fileName,
+            runName,
+            kind: "result",
+            text: async () => {
+              const response = await fetch(fileUrl.href);
+              if (!response.ok) throw new Error(`failed to fetch ${fileUrl.href}`);
+              return response.text();
+            },
+          });
+        }
+      }
+      if (source.childDirName) {
+        try {
+          const lowerBoundUrl = new URL("lower_bounds/", outputUrl).href;
+          const scenarioUrls = await listDirectoryUrls(lowerBoundUrl, "directory");
+          for (const scenarioUrl of scenarioUrls) {
+            const runName = decodeURIComponent(scenarioUrl.pathname.split("/").filter(Boolean).at(-1) || "");
+            const fileUrls = await listDirectoryUrls(scenarioUrl.href, "file");
+            for (const fileUrl of fileUrls) {
+              const fileName = decodeURIComponent(fileUrl.pathname.split("/").pop() || "");
+              if (!fileName.endsWith(".json")) continue;
+              files.push({
+                path: `lower_bounds/${runName}/${fileName}`,
+                name: fileName,
+                runName,
+                kind: "lower_bound",
+                text: async () => {
+                  const response = await fetch(fileUrl.href);
+                  if (!response.ok) throw new Error(`failed to fetch ${fileUrl.href}`);
+                  return response.text();
+                },
+              });
+            }
+          }
+        } catch {
+          // Lower-bound archive is optional.
+        }
+      }
+      await hydrateRuns(files);
+    }
+
+    async function listDirectoryUrls(url, kind) {
+      const response = await fetch(url);
+      if (!response.ok) throw new Error(`directory not found: ${url}`);
+      const html = await response.text();
+      const doc = new DOMParser().parseFromString(html, "text/html");
+      const source = currentSourceMode();
+      return Array.from(doc.querySelectorAll("a"))
+        .map((anchor) => anchor.getAttribute("href"))
+        .filter(Boolean)
+        .filter((href) => href !== "../" && href !== "./")
+        .map((href) => new URL(href, url))
+        .filter((nextUrl) => kind === "directory" ? nextUrl.pathname.endsWith("/") : !nextUrl.pathname.endsWith("/"))
+        .filter((nextUrl) => {
+          if (kind === "directory") return true;
+          return source.childDirName
+            ? nextUrl.pathname.endsWith(".json")
+            : /_(metadata\.csv|solution\.json|logs\.txt)$/.test(nextUrl.pathname);
+        });
+    }
+
+    async function saveDirectoryHandle(handle) {
+      try {
+        const db = await openVisualizerDb();
+        await idbSet(db, sourceHandleStorageKey(), handle);
+      } catch {
+        // Some browsers do not allow storing FileSystem handles, especially in file mode.
+      }
+    }
+
+    async function readSavedDirectoryHandle() {
+      try {
+        const db = await openVisualizerDb();
+        return await idbGet(db, sourceHandleStorageKey());
+      } catch {
+        return null;
+      }
+    }
+
+    async function verifyDirectoryPermission(handle, requestWrite) {
+      const options = { mode: requestWrite ? "readwrite" : "read" };
+      if ((await handle.queryPermission(options)) === "granted") return true;
+      return (await handle.requestPermission(options)) === "granted";
+    }
+
+    function openVisualizerDb() {
+      return new Promise((resolve, reject) => {
+        const request = indexedDB.open("ocam-visualizer", 1);
+        request.onupgradeneeded = () => request.result.createObjectStore("handles");
+        request.onsuccess = () => resolve(request.result);
+        request.onerror = () => reject(request.error);
+      });
+    }
+
+    function idbSet(db, key, value) {
+      return new Promise((resolve, reject) => {
+        const tx = db.transaction("handles", "readwrite");
+        tx.objectStore("handles").put(value, key);
+        tx.oncomplete = () => resolve();
+        tx.onerror = () => reject(tx.error);
+      });
+    }
+
+    function idbGet(db, key) {
+      return new Promise((resolve, reject) => {
+        const tx = db.transaction("handles", "readonly");
+        const request = tx.objectStore("handles").get(key);
+        request.onsuccess = () => resolve(request.result);
+        request.onerror = () => reject(request.error);
+      });
+    }
+
+    async function loadFromDirectoryHandle(handle) {
+      const files = [];
+      const source = currentSourceMode();
+      const targetHandle = source.childDirName ? await getChildDirectoryHandle(handle, source.childDirName) : handle;
+      if (!targetHandle) {
+        await hydrateRuns([]);
+        return;
+      }
+      for await (const [runName, runHandle] of targetHandle.entries()) {
+        if (runHandle.kind !== "directory") continue;
+        if (!source.childDirName && runName === "leaderboard") continue;
+        for await (const [fileName, fileHandle] of runHandle.entries()) {
+          if (fileHandle.kind === "file") {
+            const file = await fileHandle.getFile();
+            files.push({
+              path: `${runName}/${fileName}`,
+              name: fileName,
+              runName,
+              kind: "result",
+              text: () => file.text(),
+            });
+            continue;
+          }
+          if (source.childDirName || fileHandle.kind !== "directory") continue;
+          for await (const [nestedFileName, nestedFileHandle] of fileHandle.entries()) {
+            if (nestedFileHandle.kind !== "file") continue;
+            const file = await nestedFileHandle.getFile();
+            files.push({
+              path: `${runName}/${fileHandle.name}/${nestedFileName}`,
+              name: nestedFileName,
+              runName: `${runName} / ${fileHandle.name}`,
+              kind: "result",
+              text: () => file.text(),
+            });
+          }
+        }
+      }
+      if (source.childDirName) {
+        const lowerBoundHandle = await getChildDirectoryHandle(handle, "lower_bounds");
+        if (lowerBoundHandle) {
+          for await (const [scenarioName, scenarioHandle] of lowerBoundHandle.entries()) {
+            if (scenarioHandle.kind !== "directory") continue;
+            for await (const [fileName, fileHandle] of scenarioHandle.entries()) {
+              if (fileHandle.kind !== "file" || !fileName.endsWith(".json")) continue;
+              const file = await fileHandle.getFile();
+              files.push({
+                path: `lower_bounds/${scenarioName}/${fileName}`,
+                name: fileName,
+                runName: scenarioName,
+                kind: "lower_bound",
+                text: () => file.text(),
+              });
+            }
+          }
+        }
+      }
+      await hydrateRuns(files);
+    }
+
+    async function loadFromFileInput() {
+      const inputFiles = Array.from(els.folderInput.files || []);
+      if (!inputFiles.length) return;
+      state.directoryHandle = null;
+      state.autoSourceUrl = "";
+      state.sourceName = inputFiles[0].webkitRelativePath.split("/")[0] || "outputs";
+      const source = currentSourceMode();
+      const files = inputFiles.map((file) => {
+        const rel = file.webkitRelativePath || file.name;
+        const parts = rel.split("/");
+        const isLowerBound = parts[1] === "lower_bounds";
+        let runName = parts.length >= 3 ? parts[1] : parts[0];
+        if (!source.childDirName && parts.length >= 4) {
+          runName = `${parts[1]} / ${parts[2]}`;
+        }
+        if (source.childDirName) {
+          runName = parts.length >= 4 && parts[1] === source.childDirName ? parts[2] : "";
+          if (isLowerBound && parts.length >= 4) runName = parts[2];
+        }
+        if (!source.childDirName && parts[1] === "leaderboard") {
+          runName = "";
+        }
+        if (!source.childDirName && isLowerBound) {
+          runName = "";
+        }
+        return {
+          path: parts.slice(1).join("/") || file.name,
+          name: file.name,
+          runName,
+          kind: isLowerBound ? "lower_bound" : "result",
+          text: () => file.text(),
+        };
+      }).filter((file) => file.runName);
+      await hydrateRuns(files);
+    }
+
+    async function getChildDirectoryHandle(handle, childDirName) {
+      try {
+        return await handle.getDirectoryHandle(childDirName);
+      } catch {
+        return null;
+      }
+    }
+
+    async function hydrateRuns(files) {
+      const byRun = new Map();
+      const isLeaderboardMode = Boolean(currentSourceMode().childDirName);
+      for (const file of files) {
+        if (file.kind === "lower_bound") {
+          if (!byRun.has(file.runName)) {
+            byRun.set(file.runName, { name: file.runName, algorithms: new Map(), lowerBounds: new Map() });
+          }
+          const run = byRun.get(file.runName);
+          try {
+            const payload = JSON.parse(await file.text());
+            const lowerBound = parseLowerBoundPayload(payload, file.name);
+            const existing = run.lowerBounds.get(lowerBound.key);
+            lowerBound.files = { ...(existing?.files || {}), lowerBound: file.path };
+            lowerBound.logs = lowerBound.logs || existing?.logs || "";
+            lowerBound.metadata = { ...(existing?.metadata || {}), ...lowerBound.metadata };
+            run.lowerBounds.set(lowerBound.key, lowerBound);
+          } catch (error) {
+            const key = file.name.replace(/\.json$/, "");
+            run.lowerBounds.set(key, {
+              key,
+              displayName: key.replace("_", "/"),
+              status: "error",
+              lowerBound: null,
+              metadata: { error_type: "LowerBoundParseError", error_message: error.message },
+              files: { lowerBound: file.path },
+            });
+          }
+          continue;
+        }
+        if (isLeaderboardMode) {
+          if (!file.name.endsWith(".json")) continue;
+          if (!byRun.has(file.runName)) {
+            byRun.set(file.runName, { name: file.runName, algorithms: new Map(), lowerBounds: new Map() });
+          }
+          const run = byRun.get(file.runName);
+          let payload;
+          try {
+            payload = JSON.parse(await file.text());
+          } catch (error) {
+            const algorithmKey = file.name.replace(/\.json$/, "");
+            run.algorithms.set(algorithmKey, {
+              key: algorithmKey,
+              displayName: algorithmKey.replace("_", "/"),
+              metadata: { status: "error", error_type: "LeaderboardParseError", error_message: error.message, objectiveParsed: null },
+              solution: null,
+              solutionError: error.message,
+              logs: "",
+              files: { leaderboard: file.path },
+            });
+            continue;
+          }
+          const algorithmName = typeof payload.algorithm === "string" && payload.algorithm ? payload.algorithm : file.name.replace(/\.json$/, "").replace("_", "/");
+          const algorithmKey = algorithmName.replace("/", "_");
+          const metadata = payload.metadata && typeof payload.metadata === "object" ? { ...payload.metadata } : {};
+          metadata.algorithm = algorithmName;
+          metadata.status = payload.status ?? metadata.status ?? "";
+          metadata.objectiveParsed = payload.objective && typeof payload.objective === "object" ? payload.objective : parseObjectiveFromMetadata(metadata);
+          run.algorithms.set(algorithmKey, {
+            key: algorithmKey,
+            displayName: algorithmName,
+            metadata,
+            solution: payload.solution && typeof payload.solution === "object" ? payload.solution : null,
+            solutionError: typeof payload.solution === "object" ? "" : undefined,
+            logs: typeof payload.logs === "string" ? payload.logs : "",
+            files: { leaderboard: file.path },
+          });
+          continue;
+        }
+
+        if (file.name.match(/_lower_bound_(metadata\.csv|logs\.txt)$/)) {
+          if (!byRun.has(file.runName)) {
+            byRun.set(file.runName, { name: file.runName, algorithms: new Map(), lowerBounds: new Map() });
+          }
+          const run = byRun.get(file.runName);
+          const key = file.name.replace(/_lower_bound_(metadata\.csv|logs\.txt)$/, "");
+          if (!run.lowerBounds.has(key)) {
+            run.lowerBounds.set(key, {
+              key,
+              displayName: key.replace("_", "/"),
+              status: "",
+              lowerBound: null,
+              objective: null,
+              metadata: {},
+              logs: "",
+              files: {},
+            });
+          }
+          const lowerBound = run.lowerBounds.get(key);
+          if (file.name.endsWith("_lower_bound_metadata.csv")) {
+            lowerBound.metadata = { ...lowerBound.metadata, ...parseMetadataCsv(await file.text()) };
+            lowerBound.files.metadata = file.path;
+            if (lowerBound.metadata.algorithm) {
+              lowerBound.displayName = lowerBound.metadata.algorithm;
+              lowerBound.key = lowerBound.metadata.algorithm.replace("/", "_");
+            }
+            if (!isGurobiStatusCode(lowerBound.metadata.status)) {
+              lowerBound.status = lowerBound.metadata.status || lowerBound.status;
+            }
+            lowerBound.lowerBound = parseNumber(lowerBound.metadata.lower_bound) ?? lowerBound.lowerBound;
+          } else {
+            lowerBound.logs = await file.text();
+            lowerBound.files.logs = file.path;
+          }
+          continue;
+        }
+
+        if (file.name.endsWith("_lower_bound.json")) {
+          if (!byRun.has(file.runName)) {
+            byRun.set(file.runName, { name: file.runName, algorithms: new Map(), lowerBounds: new Map() });
+          }
+          const run = byRun.get(file.runName);
+          try {
+            const payload = JSON.parse(await file.text());
+            const lowerBound = parseLowerBoundPayload(payload, file.name.replace(/_lower_bound\.json$/, ".json"));
+            const existing = run.lowerBounds.get(lowerBound.key);
+            lowerBound.files = { ...(existing?.files || {}), lowerBound: file.path };
+            lowerBound.logs = lowerBound.logs || existing?.logs || "";
+            lowerBound.metadata = { ...(existing?.metadata || {}), ...lowerBound.metadata };
+            run.lowerBounds.set(lowerBound.key, lowerBound);
+          } catch (error) {
+            const key = file.name.replace(/_lower_bound\.json$/, "");
+            run.lowerBounds.set(key, {
+              key,
+              displayName: key.replace("_", "/"),
+              status: "error",
+              lowerBound: null,
+              metadata: { error_type: "LowerBoundParseError", error_message: error.message },
+              files: { lowerBound: file.path },
+            });
+          }
+          continue;
+        }
+        if (!file.name.match(/_(metadata\.csv|solution\.json|logs\.txt)$/)) continue;
+        if (!byRun.has(file.runName)) {
+          byRun.set(file.runName, { name: file.runName, algorithms: new Map(), lowerBounds: new Map() });
+        }
+        const run = byRun.get(file.runName);
+        const match = file.name.match(/^(.+)_(metadata\.csv|solution\.json|logs\.txt)$/);
+        if (!match) continue;
+        const algorithmKey = match[1];
+        if (!run.algorithms.has(algorithmKey)) {
+          run.algorithms.set(algorithmKey, {
+            key: algorithmKey,
+            displayName: algorithmKey.replace("_", "/"),
+            metadata: null,
+            solution: null,
+            logs: "",
+            files: {},
+          });
+        }
+        const algorithm = run.algorithms.get(algorithmKey);
+        if (file.name.endsWith("_metadata.csv")) {
+          algorithm.metadata = parseMetadataCsv(await file.text());
+          algorithm.files.metadata = file.path;
+          if (algorithm.metadata.algorithm) algorithm.displayName = algorithm.metadata.algorithm;
+        } else if (file.name.endsWith("_solution.json")) {
+          try {
+            algorithm.solution = JSON.parse(await file.text());
+          } catch (error) {
+            algorithm.solutionError = error.message;
+          }
+          algorithm.files.solution = file.path;
+        } else if (file.name.endsWith("_logs.txt")) {
+          algorithm.logs = await file.text();
+          algorithm.files.logs = file.path;
+        }
+      }
+
+      state.runs = Array.from(byRun.values())
+        .map((run) => ({
+          ...run,
+          algorithms: Array.from(run.algorithms.values()).sort(byAlgorithmOrder),
+          lowerBounds: Array.from(run.lowerBounds?.values() || []).sort(compareLowerBounds),
+        }))
+        .filter((run) => run.algorithms.length || run.lowerBounds.length)
+        .sort((a, b) => isLeaderboardMode
+          ? a.name.localeCompare(b.name, undefined, { numeric: true })
+          : b.name.localeCompare(a.name, undefined, { numeric: true }));
+
+      state.selectedRun = state.runs[0]?.name || "";
+      state.selectedAlgorithm = bestAlgorithmKey(state.runs[0]) || "";
+      state.selectedLowerBound = bestLowerBoundKey(state.runs[0]) || "";
+      els.sourceNotice.textContent = `${state.sourceName}: ${state.runs.length} ${currentSourceMode().groupLabel.toLowerCase()}s`;
+      renderAll();
+    }
+
+    function setEmptyMessage() {
+      const fileMode = location.protocol === "file:";
+      const source = currentSourceMode();
+      els.main.innerHTML = `
+        <section class="empty">
+          <div>
+            <h1>결과 폴더를 선택하세요</h1>
+            <p>${fileMode
+              ? `브라우저 보안 정책상 로컬 HTML은 주변 폴더를 자동 스캔할 수 없습니다. ${source.rootDirName}을 한 번 선택하면 지원 브라우저에서 다음 실행부터 자동 재연결을 시도합니다.`
+              : `상단의 폴더 버튼으로 outputs를 선택하세요. 지원 브라우저에서는 선택한 폴더를 기억합니다.`}</p>
+          </div>
+        </section>
+      `;
+    }
+
+    function byAlgorithmName(a, b) {
+      return a.displayName.localeCompare(b.displayName, undefined, { numeric: true });
+    }
+
+    function byAlgorithmOrder(a, b) {
+      if (!currentSourceMode().childDirName) return byAlgorithmName(a, b);
+      return compareNullableNumber(algorithmVirtualVessels(a), algorithmVirtualVessels(b))
+        || compareNullableNumber(algorithmTotalCost(a), algorithmTotalCost(b))
+        || byAlgorithmName(a, b);
+    }
+
+    function compareNullableNumber(a, b) {
+      const aNumber = typeof a === "number" && Number.isFinite(a);
+      const bNumber = typeof b === "number" && Number.isFinite(b);
+      if (aNumber && bNumber) return a - b;
+      if (aNumber) return -1;
+      if (bNumber) return 1;
+      return 0;
+    }
+
+    function algorithmVirtualVessels(algorithm) {
+      const objective = algorithm.metadata?.objectiveParsed || {};
+      return firstFiniteNumber([
+        objective.num_virtual_vessels,
+        objective.num_virtual_vessels_used,
+        algorithm.metadata?.num_virtual_vessels,
+        algorithm.metadata?.num_virtual_vessels_used,
+        solutionVirtualVessels(algorithm.solution),
+      ]);
+    }
+
+    function algorithmTotalCost(algorithm) {
+      return firstFiniteNumber([
+        algorithm.metadata?.objectiveParsed?.total_cost,
+        algorithm.metadata?.total_cost,
+      ]);
+    }
+
+    function solutionVirtualVessels(solution) {
+      if (!solution || typeof solution !== "object") return null;
+      const virtual = solution.virtual_vessel_schedules || {};
+      const virtualCount = Object.keys(virtual).length;
+      return virtualCount || Number(solution.num_virtual_vessels_used || 0);
+    }
+
+    function firstFiniteNumber(values) {
+      for (const value of values) {
+        const number = parseNumber(value);
+        if (number !== null) return number;
+      }
+      return null;
+    }
+
+    function parseMetadataCsv(text) {
+      const rows = parseCsv(text);
+      const metadata = {};
+      for (const row of rows.slice(1)) {
+        if (row.length < 2 || !row[0]) continue;
+        const key = row[0];
+        const value = row.slice(1).join(",");
+        if (key === "status" && metadata.status !== undefined) {
+          metadata.model_status = value;
+          continue;
+        }
+        metadata[key] = value;
+      }
+      metadata.objectiveParsed = parseObjectiveFromMetadata(metadata);
+      return metadata;
+    }
+
+    function parseCsv(text) {
+      const rows = [];
+      let row = [];
+      let field = "";
+      let inQuotes = false;
+      for (let i = 0; i < text.length; i += 1) {
+        const char = text[i];
+        const next = text[i + 1];
+        if (char === '"' && inQuotes && next === '"') {
+          field += '"';
+          i += 1;
+        } else if (char === '"') {
+          inQuotes = !inQuotes;
+        } else if (char === "," && !inQuotes) {
+          row.push(field);
+          field = "";
+        } else if ((char === "\n" || char === "\r") && !inQuotes) {
+          if (char === "\r" && next === "\n") i += 1;
+          row.push(field);
+          rows.push(row);
+          row = [];
+          field = "";
+        } else {
+          field += char;
+        }
+      }
+      if (field || row.length) {
+        row.push(field);
+        rows.push(row);
+      }
+      return rows;
+    }
+
+    function parseObjective(value) {
+      if (!value || value === "None" || value === "null") return null;
+      const trimmed = value.trim();
+      if (/^-?\d+(\.\d+)?$/.test(trimmed)) return { total_cost: Number(trimmed) };
+      try {
+        return JSON.parse(trimmed);
+      } catch {
+        try {
+          return JSON.parse(trimmed.replaceAll("'", '"'));
+        } catch {
+          return null;
+        }
+      }
+    }
+
+    function parseLowerBoundPayload(payload, fileName) {
+      const algorithmName = typeof payload.algorithm === "string" && payload.algorithm
+        ? payload.algorithm
+        : fileName.replace(/\.json$/, "").replace("_", "/");
+      const metadata = payload.metadata && typeof payload.metadata === "object" ? { ...payload.metadata } : {};
+      metadata.algorithm = algorithmName;
+      metadata.status = payload.status ?? metadata.status ?? "";
+      const lowerBound = parseNumber(payload.lower_bound);
+      return {
+        key: algorithmName.replace("/", "_"),
+        displayName: algorithmName,
+        status: payload.status ?? metadata.status ?? "",
+        lowerBound,
+        objective: payload.objective && typeof payload.objective === "object" ? payload.objective : null,
+        metadata,
+        logs: typeof payload.logs === "string" ? payload.logs : "",
+      };
+    }
+
+    function compareLowerBounds(a, b) {
+      const aValue = typeof a.lowerBound === "number" ? a.lowerBound : -Infinity;
+      const bValue = typeof b.lowerBound === "number" ? b.lowerBound : -Infinity;
+      return bValue - aValue || a.displayName.localeCompare(b.displayName, undefined, { numeric: true });
+    }
+
+    function parseObjectiveFromMetadata(metadata) {
+      const parsed = parseObjective(metadata.objective);
+      const objective = parsed && typeof parsed === "object" ? { ...parsed } : {};
+      for (const key of objectiveMetadataKeys(metadata)) {
+        const value = parseNumber(metadata[key]);
+        if (value !== null) objective[key] = value;
+      }
+      return Object.keys(objective).length ? objective : null;
+    }
+
+    function objectiveMetadataKeys(metadata) {
+      const preferred = [
+        "total_cost",
+        "bunker_cost",
+        "canal_fee_cost",
+        "transshipment_cost",
+        "opportunity_cost",
+        "charter_cost",
+        "vessel_cost",
+        "port_cost",
+        "penalty_cost",
+        "actual_port_calls",
+        "total_port_calls",
+        "service_lane_coverage_rate",
+        "vessel_service_days",
+        "vessel_available_days",
+        "vessel_drydock_days",
+        "vessel_utilization_rate",
+        "slot_utilization_required_teu_days",
+        "slot_utilization_deployed_teu_days",
+        "slot_utilization_rate",
+        "bunker_cost_by_inlane_sail",
+        "bunker_cost_by_port_stay",
+        "bunker_cost_by_outlane_sail",
+        "transshipment_count",
+      ];
+      const keys = Object.keys(metadata);
+      const costKeys = keys.filter((key) => key.endsWith("_cost") || key.endsWith("_costs"));
+      return [...new Set([...preferred, ...costKeys])].filter((key) => key in metadata);
+    }
+
+    function parseNumber(value) {
+      if (value === undefined || value === null || value === "") return null;
+      const normalized = String(value).replaceAll(",", "").trim();
+      if (!/^-?\d+(\.\d+)?([eE][+-]?\d+)?$/.test(normalized)) return null;
+      const number = Number(normalized);
+      return Number.isFinite(number) ? number : null;
+    }
+
+    function renderAll() {
+      renderRunList();
+      renderMain();
+    }
+
+    function renderRunList() {
+      const query = els.runSearch.value.trim().toLowerCase();
+      const runs = state.runs.filter((run) => runMatches(run, query));
+      els.runList.innerHTML = runs.map((run) => {
+        const stats = runStats(run);
+        const cls = run.name === state.selectedRun ? "run-item active" : "run-item";
+        const countText = stats.total ? `${stats.ok}/${stats.total}` : `LB ${stats.lbOk}/${stats.lowerBoundCount}`;
+        return `
+          <button class="${cls}" data-run="${escapeHtml(run.name)}">
+            <span class="run-title">
+              <span>${escapeHtml(run.name)}</span>
+              <span class="${stats.errors ? "status-bad" : "status-ok"}">${escapeHtml(countText)}</span>
+            </span>
+            <span class="run-sub">${escapeHtml(stats.algorithms)}</span>
+          </button>
+        `;
+      }).join("");
+      els.runList.querySelectorAll("[data-run]").forEach((button) => {
+        button.addEventListener("click", () => selectRun(button.dataset.run));
+      });
+    }
+
+    function runMatches(run, query) {
+      if (!query) return true;
+      const haystack = [
+        run.name,
+        ...run.algorithms.flatMap((algorithm) => [
+          algorithm.displayName,
+          algorithm.metadata?.status,
+          algorithm.metadata?.error_type,
+          algorithm.metadata?.error_message,
+        ]),
+        ...(run.lowerBounds || []).flatMap((lowerBound) => [
+          lowerBound.displayName,
+          lowerBound.status,
+          lowerBound.metadata?.status,
+          lowerBound.metadata?.error_type,
+          lowerBound.metadata?.error_message,
+        ]),
+      ].join(" ").toLowerCase();
+      return haystack.includes(query);
+    }
+
+    function runStats(run) {
+      const total = run.algorithms.length;
+      const ok = run.algorithms.filter((algorithm) => isOk(algorithm)).length;
+      const names = run.algorithms.map((algorithm) => algorithm.displayName).join(", ");
+      const lowerBoundCount = run.lowerBounds?.length || 0;
+      const lbOk = (run.lowerBounds || []).filter((lowerBound) => lowerBoundIsOk(lowerBound)).length;
+      const suffix = lowerBoundCount ? `${names}${names ? " · " : ""}LB ${lowerBoundCount}` : names;
+      return { total, ok, errors: total - ok, lowerBoundCount, lbOk, algorithms: suffix };
+    }
+
+    function selectRun(runName) {
+      state.selectedRun = runName;
+      if (isLeaderboardMode()) {
+        state.selectedAlgorithm = bestAlgorithmKey(getSelectedRun()) || "";
+      }
+      state.selectedLowerBound = bestLowerBoundKey(getSelectedRun()) || "";
+      renderRunList();
+      renderMain();
+    }
+
+    function selectAlgorithm(algorithmKey) {
+      state.selectedAlgorithm = algorithmKey;
+      renderMain();
+    }
+
+    function selectLowerBound(lowerBoundKey) {
+      state.selectedLowerBound = lowerBoundKey;
+      renderMain();
+    }
+
+    function renderMain() {
+      const run = getSelectedRun();
+      if (!run) {
+        const source = currentSourceMode();
+        const target = source.childDirName ? `outputs/${source.childDirName}` : "outputs";
+        els.main.innerHTML = `<section class="empty"><div><h1>표시할 결과가 없습니다</h1><p>metadata, solution, logs 파일이 있는 ${escapeHtml(target)}을 확인하세요.</p></div></section>`;
+        return;
+      }
+      const algorithms = run.algorithms || [];
+      if (!algorithms.some((item) => item.key === state.selectedAlgorithm)) {
+        state.selectedAlgorithm = bestAlgorithmKey(run) || "";
+      }
+      if (!(run.lowerBounds || []).some((item) => item.key === state.selectedLowerBound)) {
+        state.selectedLowerBound = bestLowerBoundKey(run) || "";
+      }
+      const algorithm = getSelectedAlgorithm();
+      if (!algorithm) {
+        if ((run.lowerBounds || []).length) {
+          const lowerBound = getSelectedLowerBound() || run.lowerBounds[0];
+          els.main.innerHTML = `
+            ${renderAlgorithmStrip(run)}
+            ${renderLowerBoundSummary(run, lowerBound)}
+            ${renderLowerBoundDetailsPanel(lowerBound)}
+          `;
+          bindMainEvents();
+          bindAlgorithmStrip();
+          return;
+        }
+        els.main.innerHTML = `<section class="empty"><div><h1>표시할 결과가 없습니다</h1><p>선택된 ${escapeHtml(currentSourceMode().groupLabel.toLowerCase())}에 algorithm이 없습니다.</p></div></section>`;
+        return;
+      }
+
+      const analysis = analyzeSolution(algorithm.solution);
+      els.main.innerHTML = `
+        ${renderAlgorithmStrip(run)}
+        ${renderSummary(run, algorithm, analysis)}
+        ${renderRuntimeHistoryPanel(algorithm)}
+        ${renderKpiPanel(algorithm, analysis)}
+        <section class="grid-two">
+          ${renderCostPanel(algorithm, analysis)}
+          ${renderLanePanel(analysis)}
+        </section>
+        ${renderPositionDeclarationPanel(run, algorithm)}
+        ${renderTimelinePanel(algorithm, analysis)}
+        ${renderDetailsPanel(algorithm, analysis)}
+      `;
+      bindMainEvents();
+      bindAlgorithmStrip();
+    }
+
+    function renderAlgorithmStrip(run) {
+      const authorRows = buildAlgorithmAuthorRows(run.algorithms);
+      const lowerBounds = run.lowerBounds || [];
+      return `
+        <section class="panel algorithm-strip">
+          <div class="panel-head">
+            <div class="panel-title">Algorithms</div>
+          </div>
+          <div class="panel-body">
+            <div class="algorithm-author-list">
+              ${authorRows.map((row) => `
+                <div class="algorithm-author-row">
+                  <div class="algorithm-author">
+                    <div class="algorithm-author-name">${escapeHtml(row.author)}</div>
+                    <div class="algorithm-author-best">best #Virtual ${escapeHtml(formatScoreVirtual(row.bestScore))}<br>cost ${escapeHtml(formatScoreCost(row.bestScore))}</div>
+                  </div>
+                  <div class="algorithm-row-scroll">
+                    ${row.algorithms.map((algorithm) => renderAlgorithmCard(algorithm)).join("")}
+                  </div>
+                </div>
+              `).join("")}
+              ${lowerBounds.length ? `
+                <div class="algorithm-author-row">
+                  <div class="algorithm-author">
+                    <div class="algorithm-author-name">Lower Bounds</div>
+                    <div class="algorithm-author-best">best LB ${escapeHtml(formatCompact(lowerBounds[0].lowerBound))}<br>${escapeHtml(lowerBounds.length)} recorded</div>
+                  </div>
+                  <div class="algorithm-row-scroll">
+                    ${lowerBounds.map((lowerBound) => renderLowerBoundCard(lowerBound)).join("")}
+                  </div>
+                </div>
+              ` : ""}
+            </div>
+          </div>
+        </section>
+      `;
+    }
+
+    function renderAlgorithmCard(algorithm) {
+      const score = algorithmScore(algorithm);
+      const statusText = readableStatus(algorithm);
+      const active = algorithm.key === state.selectedAlgorithm ? "algorithm-card active" : "algorithm-card";
+      return `
+        <button class="${active}" data-main-algorithm="${escapeHtml(algorithm.key)}">
+          <span class="algorithm-card-name">${escapeHtml(algorithm.displayName)}</span>
+          <span class="algorithm-card-meta">${escapeHtml(statusText)} · objective ${escapeHtml(formatScoreCost(score))} · #Virtual ${escapeHtml(formatScoreVirtual(score))}</span>
+        </button>
+      `;
+    }
+
+    function renderLowerBoundCard(lowerBound) {
+      const active = lowerBound.key === state.selectedLowerBound ? "algorithm-card active" : "algorithm-card";
+      const statusText = readableLowerBoundStatus(lowerBound);
+      return `
+        <button class="${active}" data-lower-bound="${escapeHtml(lowerBound.key)}">
+          <span class="algorithm-card-name">${escapeHtml(lowerBound.displayName)}</span>
+          <span class="algorithm-card-meta">${escapeHtml(statusText)} · lower bound ${escapeHtml(formatCompact(lowerBound.lowerBound))}</span>
+        </button>
+      `;
+    }
+
+    function buildAlgorithmAuthorRows(algorithms) {
+      const byAuthor = new Map();
+      for (const algorithm of algorithms) {
+        const author = algorithmAuthor(algorithm);
+        if (!byAuthor.has(author)) byAuthor.set(author, []);
+        byAuthor.get(author).push(algorithm);
+      }
+      return Array.from(byAuthor.entries())
+        .map(([author, authorAlgorithms]) => {
+          const sorted = [...authorAlgorithms].sort(compareAlgorithmsByQuality);
+          return { author, algorithms: sorted, bestScore: algorithmScore(sorted[0]) };
+        })
+        .sort((a, b) => compareScores(a.bestScore, b.bestScore) || a.author.localeCompare(b.author, undefined, { numeric: true }));
+    }
+
+    function bestAlgorithmKey(run) {
+      return buildAlgorithmAuthorRows(run?.algorithms || [])[0]?.algorithms[0]?.key || "";
+    }
+
+    function bestLowerBoundKey(run) {
+      return [...(run?.lowerBounds || [])].sort(compareLowerBounds)[0]?.key || "";
+    }
+
+    function getSelectedLowerBound() {
+      return getSelectedRun()?.lowerBounds?.find((lowerBound) => lowerBound.key === state.selectedLowerBound) || null;
+    }
+
+    function isLeaderboardMode() {
+      return Boolean(currentSourceMode().childDirName);
+    }
+
+    function algorithmAuthor(algorithm) {
+      const name = algorithm.displayName || algorithm.key || "";
+      return name.split(/[\/_]/)[0] || "unknown";
+    }
+
+    function compareAlgorithmsByQuality(a, b) {
+      return compareScores(algorithmScore(a), algorithmScore(b))
+        || a.displayName.localeCompare(b.displayName, undefined, { numeric: true });
+    }
+
+    function compareScores(a, b) {
+      return a.virtual - b.virtual || a.cost - b.cost;
+    }
+
+    function algorithmScore(algorithm) {
+      const objective = algorithm.metadata?.objectiveParsed || {};
+      const cost = typeof objective.total_cost === "number" ? objective.total_cost : Infinity;
+      const virtual = firstDefinedNumber(objective, ["num_virtual_vessels"])
+        ?? solutionVirtualCount(algorithm.solution)
+        ?? Infinity;
+      return { virtual, cost };
+    }
+
+    function solutionVirtualCount(solution) {
+      if (!solution || typeof solution !== "object") return null;
+      if (solution.virtual_vessel_schedules && typeof solution.virtual_vessel_schedules === "object") {
+        return Object.keys(solution.virtual_vessel_schedules).length;
+      }
+      if (Number.isFinite(Number(solution.num_virtual_vessels_used))) return Number(solution.num_virtual_vessels_used);
+      return null;
+    }
+
+    function formatScoreVirtual(score) {
+      return Number.isFinite(score.virtual) ? formatNumber(score.virtual) : "n/a";
+    }
+
+    function formatScoreCost(score) {
+      return Number.isFinite(score.cost) ? formatCompact(score.cost) : "n/a";
+    }
+
+    function bindAlgorithmStrip() {
+      els.main.querySelectorAll("[data-main-algorithm]").forEach((button) => {
+        button.addEventListener("click", () => selectAlgorithm(button.dataset.mainAlgorithm));
+      });
+      els.main.querySelectorAll("[data-lower-bound]").forEach((button) => {
+        button.addEventListener("click", () => selectLowerBound(button.dataset.lowerBound));
+      });
+    }
+
+    function renderSummary(run, algorithm, analysis) {
+      const metadata = algorithm.metadata || {};
+      const objective = metadata.objectiveParsed || {};
+      const statusClass = isOk(algorithm) ? "status-ok" : "status-bad";
+      const lowerBound = getSelectedLowerBound();
+      const virtualVessels = algorithmVirtualVessels(algorithm);
+      const gapInvalid = lowerBound && virtualVessels !== null && virtualVessels !== 0;
+      const gap = computeGap(objective.total_cost, lowerBound?.lowerBound);
+      const gapTooltip = gapInvalid ? "LB는 가상선박이 0인 인스턴스에 대해서만 유효합니다." : "";
+      return `
+        <section class="summary">
+          ${metric(currentSourceMode().groupLabel, run.name)}
+          ${metric("Algorithm", algorithm.displayName)}
+          ${metric("Status", readableStatus(algorithm), statusClass)}
+          ${metric("Objective", formatNumber(objective.total_cost), "", compactObjective(objective.total_cost))}
+          ${metric(
+            "Gap",
+            gapInvalid ? "invalid" : (gap ? formatPercent(gap.percent) : "n/a"),
+            gapInvalid || (gap && gap.absolute < -1e-6) ? "status-bad" : "",
+            gapInvalid ? "" : (gap ? formatUsd(gap.absolute) : ""),
+            gapTooltip,
+          )}
+          ${metric("Vessels", formatNumber(analysis.realVessels))}
+          ${metric("Virtual", formatNumber(analysis.virtualVessels))}
+        </section>
+      `;
+    }
+
+    function renderLowerBoundSummary(run, lowerBound) {
+      const metadata = lowerBound?.metadata || {};
+      const objective = lowerBound?.objective || {};
+      const runtime = firstDefinedNumber(metadata, ["elapsed_seconds", "runtime_seconds", "algorithm_runtime_seconds"]);
+      const status = readableLowerBoundStatus(lowerBound);
+      const statusClass = lowerBoundIsOk(lowerBound) ? "status-ok" : "status-bad";
+      return `
+        <section class="summary">
+          ${metric(currentSourceMode().groupLabel, run.name)}
+          ${metric("Result", lowerBound?.displayName || "-")}
+          ${metric("Status", status, statusClass)}
+          ${metric("Bound", formatNumber(lowerBound?.lowerBound), "", compactObjective(lowerBound?.lowerBound))}
+          ${metric("MIP Gap", formatPercent(firstDefinedNumber(objective, ["mip_gap"])))}
+          ${metric("Runtime", runtime === null ? "n/a" : `${formatNumber(runtime)} sec`)}
+        </section>
+      `;
+    }
+
+    function renderLowerBoundDetailsPanel(lowerBound) {
+      const metadataRows = Object.entries(lowerBound?.metadata || {})
+        .filter(([key]) => key !== "objectiveParsed")
+        .map(([key, value]) => `<tr><td title="${escapeHtml(key)}">${escapeHtml(key)}</td><td title="${escapeHtml(value)}">${escapeHtml(value)}</td></tr>`)
+        .join("");
+      return `
+        <section class="panel">
+          <div class="panel-head">
+            <div class="panel-title">Lower Bound Details</div>
+          </div>
+          <div class="panel-body">
+            <table>
+              <tbody>
+                <tr><th>Algorithm</th><td>${escapeHtml(lowerBound?.displayName || "-")}</td></tr>
+                <tr><th>Bound</th><td>${escapeHtml(formatNumber(lowerBound?.lowerBound))}</td></tr>
+                <tr><th>Status</th><td>${escapeHtml(readableLowerBoundStatus(lowerBound))}</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+        <section class="panel">
+          <div class="panel-head"><div class="panel-title">Metadata</div></div>
+          <div class="panel-body">
+            <table><thead><tr><th>Field</th><th>Value</th></tr></thead><tbody>${metadataRows || `<tr><td colspan="2">metadata 정보 없음</td></tr>`}</tbody></table>
+          </div>
+        </section>
+        <section class="panel">
+          <div class="panel-head"><div class="panel-title">Logs</div></div>
+          <div class="panel-body">
+            <pre class="log-box">${escapeHtml(lowerBound?.logs || "logs 정보 없음")}</pre>
+          </div>
+        </section>
+      `;
+    }
+
+    function computeGap(objectiveValue, lowerBoundValue) {
+      if (typeof objectiveValue !== "number" || typeof lowerBoundValue !== "number") return null;
+      const absolute = objectiveValue - lowerBoundValue;
+      const percent = absolute / Math.max(1, Math.abs(objectiveValue));
+      return { absolute, percent };
+    }
+
+    function renderRuntimeHistoryPanel(algorithm) {
+      const history = parseRuntimeHistory(algorithm.metadata?.leaderboard_runtime_history);
+      if (!history.length) return "";
+      const values = history
+        .map((item) => parseNumber(item.elapsed_seconds))
+        .filter((value) => value !== null);
+      const minValue = values.length ? Math.min(...values) : null;
+      const maxValue = values.length ? Math.max(...values) : null;
+      return `
+        <section class="panel">
+          <div class="panel-head">
+            <div class="panel-title">Leaderboard Runtime History</div>
+          </div>
+          <div class="panel-body">
+            <table>
+              <thead><tr><th>Run</th><th>Elapsed</th><th>Recorded</th></tr></thead>
+              <tbody>
+                ${history.map((item) => {
+                  const elapsed = parseNumber(item.elapsed_seconds);
+                  const width = elapsed !== null && maxValue !== null && maxValue > 0
+                    ? Math.max(3, (elapsed / maxValue) * 100)
+                    : 0;
+                  const label = elapsed === null ? "n/a" : `${formatNumber(elapsed)} sec`;
+                  const cls = elapsed !== null && minValue !== null && elapsed === minValue ? "status-ok" : "";
+                  return `
+                    <tr>
+                      <td>${escapeHtml(item.run || "-")}</td>
+                      <td>
+                        <div class="cost-bar-row">
+                          <span class="${cls}">${escapeHtml(label)}</span>
+                          <span class="cost-bar-track"><span class="cost-bar-fill" style="width:${width}%"></span></span>
+                        </div>
+                      </td>
+                      <td>${escapeHtml(item.recorded_at || "-")}</td>
+                    </tr>
+                  `;
+                }).join("")}
+              </tbody>
+            </table>
+          </div>
+        </section>
+      `;
+    }
+
+    function parseRuntimeHistory(value) {
+      if (Array.isArray(value)) return value.filter((item) => item && typeof item === "object");
+      if (typeof value !== "string" || !value.trim()) return [];
+      try {
+        const parsed = JSON.parse(value);
+        return Array.isArray(parsed) ? parsed.filter((item) => item && typeof item === "object") : [];
+      } catch {
+        return [];
+      }
+    }
+
+    function metric(label, value, cls = "", secondary = "", tooltip = "") {
+      const tooltipAttr = tooltip ? ` data-text-tooltip="${escapeHtml(tooltip)}"` : "";
+      return `
+        <div class="metric"${tooltipAttr}>
+          <div class="metric-label">${escapeHtml(label)}</div>
+          <div class="${secondary ? "metric-value-row" : ""}">
+            <div class="metric-value ${cls}">${escapeHtml(value ?? "-")}</div>
+            ${secondary ? `<div class="metric-compact">${escapeHtml(secondary)}</div>` : ""}
+          </div>
+        </div>
+      `;
+    }
+
+    function compactObjective(value) {
+      return typeof value === "number" ? `(${formatCompact(value)})` : "";
+    }
+
+    function renderKpiPanel(algorithm, analysis) {
+      const kpis = buildKpis(algorithm, analysis);
+      return `
+        <section class="panel">
+          <div class="panel-head">
+            <div class="panel-title">KPI Summary</div>
+          </div>
+          <div class="panel-body">
+            <div class="kpi-grid">
+              ${kpis.map((kpi) => `
+                <div class="kpi-card ${escapeHtml(kpi.group)}">
+                  <div class="kpi-label" title="${escapeHtml(kpi.label)}">${escapeHtml(kpi.label)}</div>
+                  <div class="kpi-value">${escapeHtml(kpi.value)}</div>
+                  <div class="kpi-sub">${escapeHtml(kpi.note)}</div>
+                </div>
+              `).join("")}
+            </div>
+          </div>
+        </section>
+      `;
+    }
+
+    function buildKpis(algorithm, analysis) {
+      const objective = algorithm.metadata?.objectiveParsed || {};
+      const metadata = algorithm.metadata || {};
+      const opportunity = firstDefinedNumber(objective, ["opportunity_cost"]);
+      const transshipmentCount = firstDefinedNumber(objective, ["transshipment_count", "ts_count", "num_transshipments"])
+        ?? firstDefinedNumber(metadata, ["transshipment_count", "ts_count", "num_transshipments"])
+        ?? analysis.transshipmentCount;
+      const runtime = firstDefinedNumber(metadata, ["elapsed_seconds", "runtime_seconds", "algorithm_runtime_seconds"]);
+      const serviceCoverageRate = firstDefinedNumber(objective, ["service_lane_coverage_rate"])
+        ?? firstDefinedNumber(metadata, ["service_lane_coverage_rate"]);
+      const actualPortCalls = firstDefinedNumber(objective, ["actual_port_calls"])
+        ?? firstDefinedNumber(metadata, ["actual_port_calls"]);
+      const totalPortCalls = firstDefinedNumber(objective, ["total_port_calls"])
+        ?? firstDefinedNumber(metadata, ["total_port_calls"]);
+      const vesselUtilizationRate = firstDefinedNumber(objective, ["vessel_utilization_rate"])
+        ?? firstDefinedNumber(metadata, ["vessel_utilization_rate"]);
+      const vesselServiceDays = firstDefinedNumber(objective, ["vessel_service_days"])
+        ?? firstDefinedNumber(metadata, ["vessel_service_days"]);
+      const vesselAvailableDays = firstDefinedNumber(objective, ["vessel_available_days"])
+        ?? firstDefinedNumber(metadata, ["vessel_available_days"]);
+      const vesselDrydockDays = firstDefinedNumber(objective, ["vessel_drydock_days"])
+        ?? firstDefinedNumber(metadata, ["vessel_drydock_days"]);
+      const slotRate = firstDefinedNumber(objective, ["slot_utilization_rate", "slot_utilization"])
+        ?? firstDefinedNumber(metadata, ["slot_utilization_rate", "slot_utilization"]);
+      const requiredTeuDays = firstDefinedNumber(objective, ["slot_utilization_required_teu_days"])
+        ?? firstDefinedNumber(metadata, ["slot_utilization_required_teu_days"]);
+      const deployedTeuDays = firstDefinedNumber(objective, ["slot_utilization_deployed_teu_days"])
+        ?? firstDefinedNumber(metadata, ["slot_utilization_deployed_teu_days"]);
+      return [
+        {
+          group: "cost",
+          label: "Opportunity Cost",
+          value: opportunity === null ? "n/a" : formatUsd(opportunity),
+          note: "sum of virtual vessel opportunity cost",
+        },
+        {
+          group: "operational",
+          label: "Service Lane Coverage Rate",
+          value: formatPercent(serviceCoverageRate),
+          note: actualPortCalls !== null && totalPortCalls !== null
+            ? `${formatNumber(actualPortCalls)} actual / ${formatNumber(totalPortCalls)} total port calls`
+            : "from evaluation output",
+        },
+        {
+          group: "operational",
+          label: "Vessel Utilization Rate",
+          value: formatPercent(vesselUtilizationRate),
+          note: vesselServiceDays !== null && vesselAvailableDays !== null
+            ? `${formatNumber(vesselServiceDays)} service days / ${formatNumber(vesselAvailableDays)} available days${vesselDrydockDays !== null ? ` (${formatNumber(vesselDrydockDays)} drydock days excluded)` : ""}`
+            : "from evaluation output",
+        },
+        {
+          group: "operational",
+          label: "Slot Utilization Rate",
+          value: formatPercent(slotRate),
+          note: requiredTeuDays !== null && deployedTeuDays !== null
+            ? `${formatNumber(requiredTeuDays)} required TEU-days / ${formatNumber(deployedTeuDays)} deployed TEU-days`
+            : "from evaluation output",
+        },
+        {
+          group: "operational",
+          label: "TS Count",
+          value: transshipmentCount === null ? "n/a" : formatNumber(transshipmentCount),
+          note: firstDefinedNumber(objective, ["transshipment_count", "ts_count", "num_transshipments"]) !== null
+            || firstDefinedNumber(metadata, ["transshipment_count", "ts_count", "num_transshipments"]) !== null
+            ? "from evaluation output"
+            : "detected from lane events",
+        },
+        {
+          group: "operational",
+          label: "Algorithm Runtime",
+          value: runtime === null ? "n/a" : `${formatNumber(runtime)} sec`,
+          note: "elapsed_seconds from metadata",
+        },
+      ];
+    }
+
+    function renderCostPanel(algorithm, analysis) {
+      const objective = algorithm.metadata?.objectiveParsed || {};
+      const entries = buildCostEntries(objective, analysis);
+      const maxValue = Math.max(1, ...entries.filter((entry) => !entry.detail).map((entry) => Math.abs(entry.value)));
+      return `
+        <section class="panel">
+          <div class="panel-head">
+            <div class="panel-title">Cost Breakdown</div>
+          </div>
+          <div class="panel-body">
+            ${entries.length ? entries.map((entry) => renderCostBarRow(entry, maxValue, objective.total_cost)).join("") : `<div class="notice">objective 정보 없음</div>`}
+          </div>
+        </section>
+      `;
+    }
+
+    function buildCostEntries(objective, analysis) {
+      const entries = [];
+      for (const name of ["bunker_cost", "canal_fee_cost", "transshipment_cost", "opportunity_cost"]) {
+        if (typeof objective[name] !== "number") continue;
+        entries.push({ key: name, value: objective[name], detail: false, offset: 0, segmentIndex: 0 });
+        if (name !== "bunker_cost") continue;
+        entries.push(...bunkerDetailEntries(objective, analysis, objective[name]));
+      }
+      return entries;
+    }
+
+    function bunkerDetailEntries(objective, analysis, bunkerTotal) {
+      const detailKeys = [
+        "bunker_cost_by_inlane_sail",
+        "bunker_cost_by_port_stay",
+        "bunker_cost_by_outlane_sail",
+      ];
+      let details = detailKeys.map((key) => ({ key, value: firstDefinedNumber(objective, [key]) }));
+      if (details.some((entry) => entry.value === null)) {
+        const byKey = {
+          bunker_cost_by_inlane_sail: sumBunkerCostByStatus(analysis.events, "INLANE_SAIL"),
+          bunker_cost_by_port_stay: sumBunkerCostByStatus(analysis.events, "PORT_STAY"),
+          bunker_cost_by_outlane_sail: sumBunkerCostByStatus(analysis.events, "OUTLANE_SAIL"),
+        };
+        details = details.map((entry) => ({ key: entry.key, value: entry.value ?? byKey[entry.key] }));
+      }
+      if (details.some((entry) => entry.value === null)) return [];
+      const detailSum = details.reduce((sum, entry) => sum + Math.abs(entry.value || 0), 0);
+      if (!detailSum) return [];
+      let offset = 0;
+      return details.map((entry, index) => {
+        const visualValue = bunkerTotal * Math.abs(entry.value) / detailSum;
+        const result = {
+          key: entry.key,
+          value: entry.value,
+          detail: true,
+          offset,
+          visualValue,
+          segmentIndex: index,
+        };
+        offset += visualValue;
+        return result;
+      });
+    }
+
+    function sumBunkerCostByStatus(events, status) {
+      let total = null;
+      for (const event of events || []) {
+        if (event.status !== status) continue;
+        for (const row of event.costRows || []) {
+          if (row.key !== "bunker_cost") continue;
+          total = addNullableNumbers(total, row.value);
+        }
+      }
+      return total;
+    }
+
+    function renderCostBarRow(entry, maxValue, totalCost) {
+      const width = Math.max(entry.detail ? 0 : 1, Math.abs((entry.visualValue ?? entry.value) / maxValue * 100));
+      const left = Math.abs((entry.offset || 0) / maxValue * 100);
+      const fillClass = entry.detail ? `bar-fill segment bunker-detail-${entry.segmentIndex}` : "bar-fill";
+      const fillStyle = entry.detail ? `left:${left}%;width:${width}%` : `width:${width}%`;
+      return `
+        <div class="bar-row ${entry.detail ? "detail" : ""}" data-cost-key="${escapeHtml(entry.key)}" data-cost-value="${escapeHtml(entry.value)}" data-cost-total="${escapeHtml(totalCost ?? "")}">
+          <div class="bar-name" title="${escapeHtml(costLabel(entry.key))}">${escapeHtml(costLabel(entry.key))}</div>
+          <div class="bar-track"><div class="${fillClass}" style="${fillStyle}"></div></div>
+          <div class="bar-value">${escapeHtml(formatCostBarValue(entry.value, totalCost))}</div>
+        </div>
+      `;
+    }
+
+    function formatCostBarValue(value, totalCost) {
+      const share = typeof totalCost === "number" && totalCost ? ` · ${formatPercentFixed(value / totalCost, 1)}` : "";
+      return `${formatCompact(value)}${share}`;
+    }
+
+    function renderLanePanel(analysis) {
+      const lanes = Object.entries(analysis.lanes)
+        .sort((a, b) => b[1].events - a[1].events)
+        .slice(0, 18);
+      return `
+        <section class="panel">
+          <div class="panel-head">
+            <div class="panel-title">Lane Coverage</div>
+          </div>
+          <div class="panel-body">
+            <div class="lane-grid">
+              ${lanes.map(([lane, item]) => `
+                <div class="lane-pill">
+                  <strong>${escapeHtml(lane)}</strong>
+                  <span>${formatNumber(item.vessels.size)} vessels · ${formatNumber(item.events)} events</span>
+                </div>
+              `).join("") || `<div class="notice">lane 정보 없음</div>`}
+            </div>
+          </div>
+        </section>
+      `;
+    }
+
+    function renderPositionDeclarationPanel(run, algorithm) {
+      const summary = positionDeclarationSummary(algorithm);
+      const selectedByKey = selectedPositionsByLaneProforma(algorithm.solution);
+      const rows = summary
+        ? (summary.rows || []).map((row) => ({
+          key: laneProformaKey(row.lane_code, row.proforma_name),
+          lane: row.lane_code,
+          proforma: row.proforma_name,
+          available: row.available_positions || [],
+          selected: row.selected_positions || [],
+          required: parseNumber(row.required_count),
+          declaredCount: parseNumber(row.declared_count),
+          effectiveFrom: parseDateValue(row.effective_from_date),
+        }))
+        : Array.from(selectedByKey.entries()).map(([key, selected]) => {
+          const [lane, proforma] = key.split("::");
+          return { key, lane, proforma, available: [], existing: [], selected, required: null, declaredCount: null, effectiveFrom: null };
+        });
+      const note = summary
+        ? "from result metadata"
+        : "position 후보 목록이 결과 metadata에 없습니다.";
+      return `
+        <section class="panel">
+          <div class="panel-head">
+            <div class="panel-title">Position Declaration</div>
+            <div class="notice">${escapeHtml(note)}</div>
+          </div>
+          <div class="panel-body">
+            ${rows.length ? `<div class="position-declare-grid">${rows.map(renderPositionDeclarationRow).join("")}</div>` : `<div class="notice">position declaration 정보 없음</div>`}
+          </div>
+        </section>
+      `;
+    }
+
+    function renderPositionDeclarationRow(row) {
+      const selected = new Set(row.selected || []);
+      const availableSet = new Set(row.available || []);
+      const positions = row.available.length
+        ? [...new Set([...row.available, ...selected])].sort((a, b) => a - b)
+        : [...selected].sort((a, b) => a - b);
+      const selectedCount = selected.size;
+      const requiredText = row.required === null ? "required n/a" : `required ${formatNumber(row.required)}`;
+      const countClass = row.required !== null && selectedCount !== row.required ? "position-declare-count status-warn" : "position-declare-count status-ok";
+      const subtitle = [
+        row.declaredCount !== null ? `positions 1-${row.declaredCount}` : "",
+        row.effectiveFrom ? `from ${formatDateTime(row.effectiveFrom)}` : "",
+      ].filter(Boolean).join(" · ");
+      return `
+        <div class="position-declare-row">
+          <div>
+            <div class="position-declare-title">${escapeHtml(row.lane)} / ${escapeHtml(row.proforma)}</div>
+            <div class="position-declare-sub">${escapeHtml(subtitle || "solution declared positions")}</div>
+          </div>
+          <div class="position-chip-list">
+            ${positions.map((position) => {
+              const isSelected = selected.has(position);
+              const isAvailable = !row.available.length || availableSet.has(position);
+              const cls = [
+                "position-chip",
+                isSelected ? "selected" : "",
+                isAvailable ? "" : "unavailable",
+              ].filter(Boolean).join(" ");
+              const text = isSelected
+                ? `position ${position}: selected${isAvailable ? "" : " outside available list"}`
+                : `position ${position}: available`;
+              return `<span class="${cls}" data-text-tooltip="${escapeHtml(text)}">${escapeHtml(position)}</span>`;
+            }).join("")}
+          </div>
+          <div class="${countClass}">${formatNumber(selectedCount)} / ${escapeHtml(requiredText)}</div>
+        </div>
+      `;
+    }
+
+    function selectedPositionsByLaneProforma(solution) {
+      const selectedByKey = new Map();
+      for (const row of solution?.declared_positions || []) {
+        const lane = row.lane_code;
+        const proforma = row.proforma_name;
+        const position = parseInt(row.declared_position_no ?? row.position_no ?? row.vessel_position, 10);
+        if (!lane || !proforma || !Number.isInteger(position)) continue;
+        const key = laneProformaKey(lane, proforma);
+        if (!selectedByKey.has(key)) selectedByKey.set(key, []);
+        selectedByKey.get(key).push(position);
+      }
+      for (const positions of selectedByKey.values()) {
+        positions.sort((a, b) => a - b);
+      }
+      return selectedByKey;
+    }
+
+    function positionDeclarationSummary(algorithm) {
+      const raw = algorithm.metadata?.position_declaration_summary;
+      if (!raw) return null;
+      if (typeof raw === "object") return raw;
+      if (typeof raw !== "string") return null;
+      try {
+        const parsed = JSON.parse(raw);
+        return parsed && typeof parsed === "object" ? parsed : null;
+      } catch {
+        return null;
+      }
+    }
+
+    function laneProformaKey(lane, proforma) {
+      return `${lane}::${proforma}`;
+    }
+
+    function renderTimelinePanel(algorithm, analysis) {
+      const filtered = filteredEvents(analysis.events);
+      const sorted = sortEvents(filtered);
+      const laneGroupsForChains = groupByLane(sorted);
+      const chains = detectTsChains(laneGroupsForChains);
+      const groups = state.timelineView === "lane" ? laneGroupsForChains : groupByVessel(sorted);
+      const canals = detectCanalPassages(groups);
+      const guides = buildTimelineGuides(algorithm, groups);
+      const range = timelineRange(filtered, guides);
+      state.eventLookup = new Map(filtered.map((event) => [event.id, event]));
+      return `
+        <section class="panel">
+          <div class="panel-head">
+            <div class="panel-title">${state.timelineView === "lane" ? "Lane View" : "Vessel View"}</div>
+            <div class="legend">
+              ${legend("PORT", "var(--port)")}
+              ${legend("SAIL IN", "var(--sail-in)")}
+              ${legend("SAIL OUT", "var(--sail-out)")}
+              ${legend("VESSEL", "var(--shipyard)")}
+              ${legend("IDLE", "var(--idle)")}
+            </div>
+          </div>
+          <div class="panel-body">
+            <div class="timeline-controls">
+              <label>Vessel Filter
+                <input id="vesselSearch" type="search" value="${escapeHtml(state.vesselFilter)}" placeholder="V004, FE1, PORT_STAY">
+              </label>
+              <label>View
+                <select id="timelineView">
+                  <option value="vessel">Vessel</option>
+                  <option value="lane">Lane</option>
+                </select>
+              </label>
+              <label>Schedule
+                <select id="timelineMode">
+                  <option value="all">All vessels</option>
+                  <option value="real">Real only</option>
+                  <option value="virtual">Virtual only</option>
+                </select>
+              </label>
+              <label>Sort
+                <select id="sortMode">
+                  <option value="vessel">Vessel</option>
+                  <option value="lane">Lane</option>
+                  <option value="start">Start time</option>
+                  <option value="events">Event count</option>
+                </select>
+              </label>
+              <label>Horizontal Scale
+                <span class="zoom-control">
+                  <input id="timelineZoom" type="range" min="0.25" max="20" step="0.01" value="${state.timelineZoom}">
+                  <span id="zoomValue" class="zoom-value">${state.timelineZoom.toFixed(2)}x</span>
+                </span>
+              </label>
+              <button id="fitButton" class="fit-button" title="타임라인 폭에 맞춤">Fit</button>
+            </div>
+            ${state.timelineView === "lane" ? renderTsSummary(chains) : ""}
+            ${renderTimeline(groups, range, chains, canals, guides)}
+          </div>
+        </section>
+      `;
+    }
+
+    function legend(label, color) {
+      return `<span class="legend-item"><span class="dot" style="background:${color}"></span>${label}</span>`;
+    }
+
+    function buildTimelineGuides(algorithm, groups) {
+      const global = [];
+      const planning = extractPlanningHorizon(algorithm?.metadata || {});
+      if (planning.start) global.push({ type: "planning", label: "Planning Start", when: planning.start });
+      if (planning.end) global.push({ type: "planning", label: "Planning End", when: planning.end });
+      const byGroup = new Map();
+      if (state.timelineView === "lane") {
+        for (const group of groups) {
+          if (!group.events?.length) continue;
+          byGroup.set(group.key, [
+            { type: "service", label: "Service Start", when: group.events[0].start },
+            { type: "service", label: "Service End", when: group.events[group.events.length - 1].end },
+          ]);
+        }
+      }
+      return { global, byGroup };
+    }
+
+    function extractPlanningHorizon(metadata) {
+      const directStart = parseDateValue(metadata.planning_horizon_start);
+      const directEnd = parseDateValue(metadata.planning_horizon_end);
+      if (directStart || directEnd) return { start: directStart, end: directEnd };
+      const raw = metadata.planning_horizon;
+      if (!raw) return { start: null, end: null };
+      try {
+        const parsed = typeof raw === "string" ? JSON.parse(raw) : raw;
+        return {
+          start: parseDateValue(parsed?.start),
+          end: parseDateValue(parsed?.end),
+        };
+      } catch {
+        return { start: null, end: null };
+      }
+    }
+
+    function parseDateValue(value) {
+      if (!value) return null;
+      const date = new Date(value);
+      return Number.isNaN(date.getTime()) ? null : date;
+    }
+
+    function renderGuideLines(guides, range, duration, withLabels) {
+      return (guides || []).map((guide) => {
+        const left = ((guide.when - range.start) / duration) * 100;
+        if (!Number.isFinite(left) || left < 0 || left > 100) return "";
+        return `
+          <div class="guide-line ${escapeHtml(guide.type)}" style="left:${left}%">
+            ${withLabels ? `<span class="guide-label">${escapeHtml(guide.label)}</span>` : ""}
+          </div>
+        `;
+      }).join("");
+    }
+
+    function renderVirtualCoverageBands(group, range, duration) {
+      const virtualEvents = (group.events || []).filter((event) => event.isVirtual);
+      if (!virtualEvents.length) return "";
+
+      const intervals = virtualEvents
+        .map((event) => {
+          const start = Math.max(range.start.getTime(), event.start.getTime());
+          const end = Math.min(range.end.getTime(), event.end.getTime());
+          const opportunityRows = (event.costRows || []).filter((row) => row.key === "opportunity_cost");
+          const opportunity = opportunityRows.length ? opportunityRows.reduce((sum, row) => sum + row.value, 0) : null;
+          return { start, end, opportunity };
+        })
+        .filter((interval) => Number.isFinite(interval.start) && Number.isFinite(interval.end) && interval.end > interval.start)
+        .sort((a, b) => a.start - b.start);
+
+      if (!intervals.length) return "";
+
+      const merged = [];
+      for (const interval of intervals) {
+        const previous = merged[merged.length - 1];
+        if (!previous || interval.start > previous.end) {
+          merged.push({ ...interval });
+          continue;
+        }
+        previous.end = Math.max(previous.end, interval.end);
+        previous.opportunity = addNullableNumbers(previous.opportunity, interval.opportunity);
+      }
+
+      return merged.map((interval) => {
+        const left = ((interval.start - range.start.getTime()) / duration) * 100;
+        const width = Math.max(0.4, ((interval.end - interval.start) / duration) * 100);
+        const tooltip = [
+          "Virtual vessel coverage",
+          `${formatDateTime(new Date(interval.start))} - ${formatDateTime(new Date(interval.end))}`,
+          `Opportunity cost: ${interval.opportunity === null ? "n/a" : formatUsd(interval.opportunity)}`,
+        ].join("\n");
+        return `<div class="virtual-band" style="left:${left}%;width:${width}%" data-text-tooltip="${escapeHtml(tooltip)}"></div>`;
+      }).join("");
+    }
+
+    function renderTsSummary(chains) {
+      if (!chains.length) return `<div class="notice">TS chain 없음. Lane view는 lane / proforma / position 단위로 이벤트를 이어서 보여줍니다.</div>`;
+      const invalid = chains.filter((chain) => !chain.valid).length;
+      const cls = invalid ? "status-warn" : "status-ok";
+      return `<div class="notice ${cls}">TS chains: ${formatNumber(chains.length)}${invalid ? ` · check ${formatNumber(invalid)}` : ""}. Callouts show the handoff, while short unload/load events stay on the timeline.</div>`;
+    }
+
+    function renderTimeline(groups, range, chains = [], canals = [], guides = { global: [], byGroup: new Map() }) {
+      if (!groups.length) return `<div class="notice">조건에 맞는 이벤트가 없습니다.</div>`;
+      const ticks = makeTicks(range.start, range.end, 7);
+      const duration = Math.max(1, range.end - range.start);
+      const { labelWidth, trackWidth } = timelineDimensions();
+      const totalWidth = labelWidth + trackWidth;
+      return `
+        <div class="timeline">
+          <div id="timelineGrid" class="timeline-grid ${state.timelineView === "lane" ? "lane-view" : ""}" style="min-width:${totalWidth}px">
+            <div class="time-axis">
+              <div class="axis-label">${formatDate(range.start)}</div>
+              <div class="axis-track">
+                ${ticks.map((tick) => `<div class="tick" style="left:${((tick - range.start) / duration) * 100}%"><span>${formatDate(tick)}</span></div>`).join("")}
+                ${renderGuideLines(guides.global, range, duration, true)}
+              </div>
+            </div>
+            ${groups.map((group) => `
+              <div class="vessel-row">
+                <div class="vessel-label" title="${escapeHtml(group.title)}">${renderGroupLabel(group)}</div>
+                <div class="event-track">
+                  ${renderVirtualCoverageBands(group, range, duration)}
+                  ${ticks.map((tick) => `<div class="tick" style="left:${((tick - range.start) / duration) * 100}%"></div>`).join("")}
+                  ${renderGuideLines([...(guides.global || []), ...((guides.byGroup && guides.byGroup.get(group.key)) || [])], range, duration, false)}
+                  ${state.timelineView === "lane" ? chains.filter((chain) => chain.groupKey === group.key).map((chain) => {
+                    const left = ((chain.start - range.start) / duration) * 100;
+                    const width = Math.max(0.4, ((chain.end - chain.start) / duration) * 100);
+                    return `<div class="chain-band" style="left:${left}%;width:${width}%"></div>`;
+                  }).join("") : ""}
+                  ${chainCalloutsForGroup(chains, group, range, duration)}
+                  ${canalCalloutsForGroup(canals, group, range, duration)}
+                  ${group.events.map((event) => {
+                    const left = ((event.start - range.start) / duration) * 100;
+                    const tsClass = event.tsChainId ? " ts-chain-member" : "";
+                    const width = eventWidthPercent(event, duration);
+                    if (isPointEvent(event) || isMicroIntervalEvent(event, width)) {
+                      const pointLeft = isPointEvent(event) ? left : eventMidpointPercent(event, range, duration);
+                      const microClass = isPointEvent(event) ? "" : " micro-interval";
+                      return `<div class="point-event ${escapeHtml(event.status)}${tsClass}${microClass}" style="left:${pointLeft}%" data-event-id="${escapeHtml(event.id)}"><span class="point-tag">${escapeHtml(pointEventLabel(event))}</span><span class="point-pin"></span></div>`;
+                    }
+                    return `<div class="event ${escapeHtml(event.status)} ${sailClass(event)}${tsClass}" style="left:${left}%;width:${width}%" data-event-id="${escapeHtml(event.id)}">${escapeHtml(eventShortLabel(event))}</div>`;
+                  }).join("")}
+                </div>
+              </div>
+            `).join("")}
+          </div>
+        </div>
+      `;
+    }
+
+    function renderDetailsPanel(algorithm, analysis) {
+      const metadataRows = Object.entries(algorithm.metadata || {})
+        .filter(([key]) => key !== "objectiveParsed")
+        .map(([key, value]) => `<tr><td title="${escapeHtml(key)}">${escapeHtml(key)}</td><td title="${escapeHtml(value)}">${escapeHtml(value)}</td></tr>`)
+        .join("");
+      const errorBlock = isOk(algorithm) ? "" : `
+        <section class="panel">
+          <div class="panel-head"><div class="panel-title">Error</div></div>
+          <div class="panel-body">
+            <table>
+              <tbody>
+                <tr><th>Type</th><td>${escapeHtml(algorithm.metadata?.error_type || "-")}</td></tr>
+                <tr><th>Message</th><td title="${escapeHtml(algorithm.metadata?.error_message || "")}">${escapeHtml(algorithm.metadata?.error_message || "-")}</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+      `;
+      return `
+        ${errorBlock}
+        <section class="panel">
+          <div class="panel-head">
+            <div class="panel-title">Details</div>
+            <div class="tabs">
+              ${tabButton("metadata", "Metadata")}
+              ${tabButton("events", "Events")}
+              ${tabButton("logs", "Logs")}
+              ${tabButton("json", "JSON")}
+            </div>
+          </div>
+          <div class="panel-body">
+            <div id="tab-metadata" class="${state.activeTab === "metadata" ? "" : "hide"}">
+              <table><thead><tr><th>Field</th><th>Value</th></tr></thead><tbody>${metadataRows}</tbody></table>
+            </div>
+            <div id="tab-events" class="${state.activeTab === "events" ? "" : "hide"}">
+              ${renderEventTable(analysis.events)}
+            </div>
+            <div id="tab-logs" class="${state.activeTab === "logs" ? "" : "hide"}">
+              <pre class="log-box">${escapeHtml(algorithm.logs || "logs 정보 없음")}</pre>
+            </div>
+            <div id="tab-json" class="${state.activeTab === "json" ? "" : "hide"}">
+              <pre class="json-box">${escapeHtml(JSON.stringify(algorithm.solution || {}, null, 2))}</pre>
+            </div>
+          </div>
+        </section>
+      `;
+    }
+
+    function tabButton(tab, label) {
+      const active = state.activeTab === tab ? "tab active" : "tab";
+      return `<button class="${active}" data-tab="${tab}">${label}</button>`;
+    }
+
+    function renderEventTable(events) {
+      const rows = filteredEvents(events).slice(0, 300).map((event) => `
+        <tr>
+          <td title="${escapeHtml(event.vessel)}">${escapeHtml(event.vessel)}</td>
+          <td title="${escapeHtml(event.status)}">${escapeHtml(event.status)}</td>
+          <td title="${escapeHtml(event.lane || "-")}">${escapeHtml(event.lane || "-")}</td>
+          <td title="${escapeHtml(event.port || "-")}">${escapeHtml(event.port || "-")}</td>
+          <td title="${escapeHtml(formatDateTime(event.start))}">${escapeHtml(formatDateTime(event.start))}</td>
+          <td title="${escapeHtml(formatDateTime(event.end))}">${escapeHtml(formatDateTime(event.end))}</td>
+        </tr>
+      `).join("");
+      return `<table>
+        <thead><tr><th>Vessel</th><th>Status</th><th>Lane</th><th>Port</th><th>Start</th><th>End</th></tr></thead>
+        <tbody>${rows || `<tr><td colspan="6">이벤트 없음</td></tr>`}</tbody>
+      </table>`;
+    }
+
+    function bindMainEvents() {
+      const vesselSearch = document.getElementById("vesselSearch");
+      const timelineView = document.getElementById("timelineView");
+      const timelineMode = document.getElementById("timelineMode");
+      const sortMode = document.getElementById("sortMode");
+      const timelineZoom = document.getElementById("timelineZoom");
+      const zoomValue = document.getElementById("zoomValue");
+      if (vesselSearch) {
+        vesselSearch.value = state.vesselFilter;
+        vesselSearch.addEventListener("input", () => {
+          state.vesselFilter = vesselSearch.value;
+          renderMain();
+        });
+      }
+      if (timelineView) {
+        timelineView.value = state.timelineView;
+        timelineView.addEventListener("change", () => {
+          state.timelineView = timelineView.value;
+          if (state.timelineView === "lane" && state.sortMode === "vessel") state.sortMode = "lane";
+          if (state.timelineView === "vessel" && state.sortMode === "lane") state.sortMode = "vessel";
+          renderMain();
+        });
+      }
+      if (timelineMode) {
+        timelineMode.value = state.timelineMode;
+        timelineMode.addEventListener("change", () => {
+          state.timelineMode = timelineMode.value;
+          renderMain();
+        });
+      }
+      if (sortMode) {
+        sortMode.value = state.sortMode;
+        sortMode.addEventListener("change", () => {
+          state.sortMode = sortMode.value;
+          renderMain();
+        });
+      }
+      if (timelineZoom) {
+        timelineZoom.value = state.timelineZoom;
+        timelineZoom.addEventListener("input", () => {
+          state.timelineZoom = Number(timelineZoom.value);
+          renderTimelineOnly();
+        });
+      }
+      document.querySelectorAll("[data-tab]").forEach((button) => {
+        button.addEventListener("click", () => {
+          state.activeTab = button.dataset.tab;
+          renderMain();
+        });
+      });
+      const fitButton = document.getElementById("fitButton");
+      if (fitButton) {
+        fitButton.addEventListener("click", () => {
+          state.timelineZoom = computeFitZoom();
+          renderTimelineOnly();
+          if (timelineZoom) timelineZoom.value = state.timelineZoom;
+        });
+      }
+      bindTimelineTooltips();
+      bindCostTooltips();
+    }
+
+    function renderTimelineOnly() {
+      const timelineGrid = document.getElementById("timelineGrid");
+      const zoomValue = document.getElementById("zoomValue");
+      if (zoomValue) zoomValue.textContent = `${state.timelineZoom.toFixed(2)}x`;
+      if (!timelineGrid) return;
+      const { labelWidth, trackWidth } = timelineDimensions();
+      timelineGrid.style.minWidth = `${labelWidth + trackWidth}px`;
+    }
+
+    function computeFitZoom() {
+      const timeline = document.querySelector(".timeline");
+      if (!timeline) return 1;
+      const { labelWidth } = timelineDimensions();
+      const availableTrackWidth = Math.max(240, timeline.clientWidth - labelWidth - 8);
+      const fitZoom = availableTrackWidth / 980;
+      return Math.max(0.25, Math.min(20, Number(fitZoom.toFixed(2))));
+    }
+
+    function timelineDimensions() {
+      const labelWidth = state.timelineView === "lane" ? 230 : 150;
+      const trackWidth = Math.round(980 * state.timelineZoom);
+      return { labelWidth, trackWidth };
+    }
+
+    function chainCalloutsForGroup(chains, group, range, duration) {
+      const visibleChains = chains.filter((chain) => {
+        if (state.timelineView === "lane") return chain.groupKey === group.key;
+        return group.vessel === chain.outgoing || group.vessel === chain.incoming;
+      });
+      return visibleChains.map((chain) => {
+        const anchor = tsAnchorForGroup(chain, group);
+        const left = ((anchor - range.start) / duration) * 100;
+        const label = state.timelineView === "lane"
+          ? "TS"
+          : (group.vessel === chain.outgoing ? "TS OUT" : "TS IN");
+        return `<div class="chain-callout" style="left:${left}%" data-text-tooltip="${escapeHtml(chainTooltip(chain))}">${escapeHtml(label)}</div>`;
+      }).join("");
+    }
+
+    function chainTooltip(chain) {
+      const tsCost = sumExplicitCosts(chain.events || [], "transshipment_cost");
+      return [
+        `TS Chain ${chain.id.toUpperCase()}`,
+        `${chain.outgoing} -> ${chain.incoming}`,
+        chain.tsPort && `Port: ${chain.tsPort}`,
+        `Gap: ${chain.gapDays.toFixed(2)} days`,
+        `TS Cost: ${tsCost === null ? "n/a" : formatUsd(tsCost)}`,
+      ].filter(Boolean).join("\n");
+    }
+
+    function tsAnchorForGroup(chain, group) {
+      if (state.timelineView === "lane") {
+        return new Date((chain.phaseOutTime.getTime() + chain.phaseInTime.getTime()) / 2);
+      }
+      if (group.vessel === chain.outgoing) return chain.phaseOutTime;
+      if (group.vessel === chain.incoming) return chain.phaseInTime;
+      return new Date((chain.phaseOutTime.getTime() + chain.phaseInTime.getTime()) / 2);
+    }
+
+    function canalCalloutsForGroup(canals, group, range, duration) {
+      return canals
+        .filter((canal) => canal.groupKey === group.key)
+        .map((canal) => {
+          const left = ((canal.anchor - range.start) / duration) * 100;
+          return `<div class="canal-callout" style="left:${left}%" data-text-tooltip="${escapeHtml(canalTooltip(canal))}">CANAL</div>`;
+        }).join("");
+    }
+
+    function canalTooltip(canal) {
+      const canalCost = sumExplicitCosts(canal.events || [], "canal_fee_cost");
+      return [
+        "Canal passage",
+        canal.route,
+        `${formatDateTime(canal.start)} - ${formatDateTime(canal.end)}`,
+        `Canal fee: ${canalCost === null ? "n/a" : formatUsd(canalCost)}`,
+      ].filter(Boolean).join("\n");
+    }
+
+    function analyzeSolution(solution) {
+      const empty = {
+        realVessels: 0,
+        virtualVessels: 0,
+        declaredPositions: 0,
+        lanes: {},
+        events: [],
+        transshipmentCount: null,
+      };
+      if (!solution || typeof solution !== "object") return empty;
+      const real = solution.vessel_schedules || {};
+      const virtual = solution.virtual_vessel_schedules || {};
+      const events = [
+        ...extractScheduleEvents(real, false),
+        ...extractScheduleEvents(virtual, true),
+      ];
+      const lanes = {};
+      for (const event of events) {
+        const lane = event.lane || "(none)";
+        lanes[lane] ||= { vessels: new Set(), events: 0 };
+        lanes[lane].vessels.add(event.vessel);
+        lanes[lane].events += 1;
+      }
+      const eventsByLanePosition = new Map();
+      for (const event of events) {
+        if (!event.lane || !event.proforma || event.position === "") continue;
+        const key = laneKey(event);
+        if (!eventsByLanePosition.has(key)) eventsByLanePosition.set(key, []);
+        eventsByLanePosition.get(key).push(event);
+      }
+      let transshipmentCount = 0;
+      for (const laneEvents of eventsByLanePosition.values()) {
+        const ordered = [...laneEvents].sort(laneEventCompare);
+        for (let i = 0; i <= ordered.length - 4; i += 1) {
+          if (!isTsChain(ordered.slice(i, i + 4))) continue;
+          transshipmentCount += 1;
+          i += 3;
+        }
+      }
+      return {
+        realVessels: Object.keys(real).length,
+        virtualVessels: solutionVirtualVessels(solution),
+        declaredPositions: Array.isArray(solution.declared_positions) ? solution.declared_positions.length : 0,
+        lanes,
+        events,
+        transshipmentCount,
+      };
+    }
+
+    function extractScheduleEvents(schedules, isVirtual) {
+      const events = [];
+      for (const [vessel, schedule] of Object.entries(schedules || {})) {
+        const rawEvents = Array.isArray(schedule) ? schedule : schedule?.events || [];
+        rawEvents.forEach((raw, index) => {
+          const [start, end] = eventTimes(raw);
+          if (!start || !end) return;
+          events.push({
+            id: `${vessel}-${index}-${raw.status || "UNKNOWN"}`,
+            vessel,
+            index,
+            isVirtual,
+            status: raw.status || "UNKNOWN",
+            lane: raw.lane_code || "",
+            proforma: raw.proforma_name || "",
+            position: raw.position_no ?? "",
+            port: raw.port_code || raw.from_port_code || raw.ts_port_code || raw.phase_in_port_code || raw.phase_out_port_code || raw.delivery_port_code || raw.redelivery_port_code || raw.dock_port_code || raw.to_port_code || "",
+            endPort: raw.to_port_code || raw.port_code || raw.ts_port_code || raw.phase_in_port_code || raw.phase_out_port_code || raw.delivery_port_code || raw.redelivery_port_code || raw.dock_port_code || "",
+            tsPort: raw.ts_port_code || "",
+            start,
+            end,
+            raw,
+            costRows: explicitEventCostRows(raw),
+          });
+        });
+      }
+      return events;
+    }
+
+    function explicitEventCostRows(raw) {
+      const rows = [];
+      const seen = new Set();
+      const directKeys = Object.keys(raw || {}).filter((key) => {
+        if (key in COST_LABELS) return true;
+        return key.endsWith("_cost") || key.endsWith("_costs") || key.endsWith("_fee");
+      });
+      for (const key of directKeys) addExplicitCostRow(rows, seen, key, raw[key], key);
+      for (const field of ["costs", "cost_breakdown", "event_costs"]) {
+        const nested = raw?.[field];
+        if (!nested || typeof nested !== "object" || Array.isArray(nested)) continue;
+        for (const [key, value] of Object.entries(nested)) addExplicitCostRow(rows, seen, key, value, `${field}.${key}`);
+      }
+      return rows;
+    }
+
+    function addExplicitCostRow(rows, seen, key, rawValue, sourceField) {
+      const value = parseNumber(rawValue);
+      if (value === null || seen.has(sourceField)) return;
+      seen.add(sourceField);
+      const normalizedKey = normalizeCostKey(key);
+      rows.push({ key: normalizedKey, label: costLabel(normalizedKey), value });
+    }
+
+    function normalizeCostKey(key) {
+      return {
+        canal_fee: "canal_fee_cost",
+        canal_cost: "canal_fee_cost",
+        sail_cost: "bunker_cost",
+        sail_bunker_cost: "bunker_cost",
+        inlane_sail_bunker_cost: "bunker_cost_by_inlane_sail",
+        portstay_bunker_cost: "bunker_cost_by_port_stay",
+        port_stay_bunker_cost: "bunker_cost_by_port_stay",
+        outlane_sail_bunker_cost: "bunker_cost_by_outlane_sail",
+        ts_cost: "transshipment_cost",
+        transshipment_fee: "transshipment_cost",
+        virtual_opportunity_cost: "opportunity_cost",
+      }[key] || key;
+    }
+
+    function sumExplicitCosts(events, key) {
+      let total = null;
+      for (const event of events) {
+        for (const row of event.costRows || []) {
+          if (row.key !== key) continue;
+          total = addNullableNumbers(total, row.value);
+        }
+      }
+      return total;
+    }
+
+    function addNullableNumbers(left, right) {
+      if (left === null && right === null) return null;
+      return (left || 0) + (right || 0);
+    }
+
+    function eventTimes(event) {
+      for (const [startKey, endKey] of EVENT_TIME_FIELDS) {
+        if (event[startKey] && event[endKey]) {
+          const start = new Date(event[startKey]);
+          const end = new Date(event[endKey]);
+          if (!Number.isNaN(start.getTime()) && !Number.isNaN(end.getTime())) return [start, end];
+        }
+      }
+      const dates = Object.entries(event)
+        .filter(([key, value]) => typeof value === "string" && key.match(/(start|end|date|time)$/i))
+        .map(([, value]) => new Date(value))
+        .filter((date) => !Number.isNaN(date.getTime()))
+        .sort((a, b) => a - b);
+      return dates.length ? [dates[0], dates[dates.length - 1]] : [null, null];
+    }
+
+    function filteredEvents(events) {
+      const query = state.vesselFilter.trim().toLowerCase();
+      return events.filter((event) => {
+        if (state.timelineMode === "real" && event.isVirtual) return false;
+        if (state.timelineMode === "virtual" && !event.isVirtual) return false;
+        if (!query) return true;
+        const haystack = [event.vessel, event.status, event.lane, event.proforma, event.port].join(" ").toLowerCase();
+        return haystack.includes(query);
+      });
+    }
+
+    function sortEvents(events) {
+      return [...events].sort((a, b) => {
+        if (state.sortMode === "lane") return (a.lane || "").localeCompare(b.lane || "") || a.start - b.start;
+        if (state.sortMode === "start") return a.start - b.start;
+        return a.vessel.localeCompare(b.vessel, undefined, { numeric: true }) || a.start - b.start;
+      });
+    }
+
+    function groupByVessel(events) {
+      const map = new Map();
+      for (const event of events) {
+        if (!map.has(event.vessel)) {
+          map.set(event.vessel, {
+            key: event.vessel,
+            title: event.vessel,
+            vessel: event.vessel,
+            isVirtual: event.isVirtual,
+            events: [],
+          });
+        }
+        map.get(event.vessel).events.push(event);
+      }
+      const groups = Array.from(map.values());
+      if (state.sortMode === "events") {
+        groups.sort((a, b) => b.events.length - a.events.length || a.vessel.localeCompare(b.vessel, undefined, { numeric: true }));
+      } else if (state.sortMode === "lane") {
+        groups.sort((a, b) => (a.events[0]?.lane || "").localeCompare(b.events[0]?.lane || "") || a.vessel.localeCompare(b.vessel));
+      } else if (state.sortMode === "start") {
+        groups.sort((a, b) => a.events[0].start - b.events[0].start);
+      } else {
+        groups.sort((a, b) => a.vessel.localeCompare(b.vessel, undefined, { numeric: true }));
+      }
+      return groups;
+    }
+
+    function groupByLane(events) {
+      const map = new Map();
+      for (const event of events.filter((item) => item.lane && item.proforma && item.position !== "")) {
+        const key = laneKey(event);
+        if (!map.has(key)) {
+          map.set(key, {
+            key,
+            title: key,
+            lane: event.lane,
+            proforma: event.proforma,
+            position: event.position,
+            events: [],
+          });
+        }
+        map.get(key).events.push(event);
+      }
+      const groups = Array.from(map.values());
+      for (const group of groups) {
+        group.events.sort(laneEventCompare);
+        group.vessels = new Set(group.events.map((event) => event.vessel));
+      }
+      if (state.sortMode === "events") {
+        groups.sort((a, b) => b.events.length - a.events.length || a.key.localeCompare(b.key, undefined, { numeric: true }));
+      } else if (state.sortMode === "start") {
+        groups.sort((a, b) => a.events[0].start - b.events[0].start);
+      } else {
+        groups.sort((a, b) => a.lane.localeCompare(b.lane, undefined, { numeric: true }) || a.proforma.localeCompare(b.proforma, undefined, { numeric: true }) || Number(a.position) - Number(b.position));
+      }
+      return groups;
+    }
+
+    function laneKey(event) {
+      return `${event.lane}/${event.proforma}/${event.position}`;
+    }
+
+    function laneEventCompare(a, b) {
+      return a.start - b.start || lanePriority(a.status) - lanePriority(b.status) || a.end - b.end || a.vessel.localeCompare(b.vessel);
+    }
+
+    function lanePriority(status) {
+      return {
+        TRANSSHIPMENT_UNLOAD: 0,
+        PHASE_OUT: 1,
+        PHASE_IN: 2,
+        TRANSSHIPMENT_LOAD: 3,
+      }[status] ?? 9;
+    }
+
+    function detectTsChains(groups) {
+      const chains = [];
+      for (const group of groups) {
+        for (const event of group.events) delete event.tsChainId;
+        if (!group.lane) continue;
+        const ordered = [...group.events].sort(laneEventCompare);
+        for (let i = 0; i <= ordered.length - 4; i += 1) {
+          const slice = ordered.slice(i, i + 4);
+          if (!isTsChain(slice)) continue;
+          const id = `ts-${chains.length + 1}`;
+          for (const event of slice) event.tsChainId = id;
+          const outgoing = slice[1].vessel;
+          const incoming = slice[2].vessel;
+          const gapDays = (slice[2].end - slice[1].end) / 86400000;
+          chains.push({
+            id,
+            groupKey: group.key,
+            events: slice,
+            start: slice[0].start,
+            end: slice[3].end,
+            phaseOutTime: slice[1].end,
+            phaseInTime: slice[2].start,
+            outgoing,
+            incoming,
+            tsPort: slice[0].tsPort || slice[3].tsPort || slice[0].port,
+            gapDays,
+            valid: outgoing !== incoming && gapDays >= 1 && gapDays <= 7,
+          });
+          i += 3;
+        }
+      }
+      return chains;
+    }
+
+    function isTsChain(events) {
+      return events.map((event) => event.status).join(">") === "TRANSSHIPMENT_UNLOAD>PHASE_OUT>PHASE_IN>TRANSSHIPMENT_LOAD";
+    }
+
+    function detectCanalPassages(groups) {
+      const passages = [];
+      for (const group of groups) {
+        const events = [...group.events].sort(laneEventCompare);
+        for (let i = 0; i < events.length; i += 1) {
+          const two = events.slice(i, i + 2);
+          if (isOutlaneCanalPair(two)) {
+            passages.push(makeCanalPassage(group.key, two, two[0].end));
+            i += 1;
+            continue;
+          }
+          const three = events.slice(i, i + 3);
+          if (isInlaneCanalPortStay(three)) {
+            passages.push(makeCanalPassage(group.key, three, eventCenterTime(three[1])));
+            i += 2;
+          }
+        }
+      }
+      return passages;
+    }
+
+    function isOutlaneCanalPair(events) {
+      return events.length === 2
+        && events.every((event) => event.status === "OUTLANE_SAIL")
+        && touchesCanalPort(events[0])
+        && touchesCanalPort(events[1])
+        && connectedEvents(events[0], events[1]);
+    }
+
+    function isInlaneCanalPortStay(events) {
+      return events.length === 3
+        && events[0].status === "INLANE_SAIL"
+        && events[1].status === "PORT_STAY"
+        && events[2].status === "INLANE_SAIL"
+        && touchesCanalPort(events[1])
+        && connectedEvents(events[0], events[1])
+        && connectedEvents(events[1], events[2]);
+    }
+
+    function touchesCanalPort(event) {
+      return eventPorts(event).some((port) => CANAL_PORTS.has(port));
+    }
+
+    function connectedEvents(left, right) {
+      const leftEnd = endPort(left);
+      const rightStart = startPort(right);
+      return leftEnd && rightStart && leftEnd === rightStart;
+    }
+
+    function makeCanalPassage(groupKey, events, anchor) {
+      return {
+        groupKey,
+        start: events[0].start,
+        end: events[events.length - 1].end,
+        anchor,
+        route: events.flatMap(eventPorts).filter(Boolean).filter((port, index, ports) => index === 0 || port !== ports[index - 1]).join(" -> "),
+        events,
+      };
+    }
+
+    function eventCenterTime(event) {
+      return new Date((event.start.getTime() + event.end.getTime()) / 2);
+    }
+
+    function eventPorts(event) {
+      return [startPort(event), endPort(event)].filter(Boolean);
+    }
+
+    function startPort(event) {
+      return event.raw.from_port_code || event.raw.port_code || event.raw.ts_port_code || event.raw.phase_in_port_code || event.raw.phase_out_port_code || event.raw.delivery_port_code || event.raw.dock_port_code || "";
+    }
+
+    function endPort(event) {
+      return event.raw.to_port_code || event.raw.port_code || event.raw.ts_port_code || event.raw.phase_in_port_code || event.raw.phase_out_port_code || event.raw.redelivery_port_code || event.raw.dock_port_code || "";
+    }
+
+    function renderGroupLabel(group) {
+      if (state.timelineView === "lane" && group.lane) {
+        return `
+          <span class="lane-label-main">${escapeHtml(group.lane)} / ${escapeHtml(group.proforma)} / #${escapeHtml(group.position)}</span>
+          <span class="lane-label-sub">${formatNumber(group.vessels?.size || 0)} vessels · ${formatNumber(group.events.length)} events</span>
+        `;
+      }
+      return `${escapeHtml(group.vessel)}${group.isVirtual ? " · V" : ""}`;
+    }
+
+    function eventRange(events) {
+      const starts = events.map((event) => event.start.getTime());
+      const ends = events.map((event) => event.end.getTime());
+      const start = new Date(Math.min(...starts));
+      const end = new Date(Math.max(...ends));
+      if (!events.length || Number.isNaN(start.getTime()) || Number.isNaN(end.getTime())) {
+        const now = new Date();
+        return { start: now, end: new Date(now.getTime() + 86400000) };
+      }
+      return { start, end };
+    }
+
+    function timelineRange(events, guides) {
+      const base = eventRange(events);
+      const guideTimes = [
+        ...(guides?.global || []).map((guide) => guide.when.getTime()),
+        ...Array.from((guides?.byGroup || new Map()).values()).flat().map((guide) => guide.when.getTime()),
+      ].filter((value) => Number.isFinite(value));
+      if (!guideTimes.length) return base;
+      return {
+        start: new Date(Math.min(base.start.getTime(), ...guideTimes)),
+        end: new Date(Math.max(base.end.getTime(), ...guideTimes)),
+      };
+    }
+
+    function makeTicks(start, end, count) {
+      const ticks = [];
+      const step = (end - start) / Math.max(1, count - 1);
+      for (let i = 0; i < count; i += 1) ticks.push(new Date(start.getTime() + step * i));
+      return ticks;
+    }
+
+    function eventShortLabel(event) {
+      if (event.status === "PORT_STAY") return event.port || event.lane || event.status;
+      if (event.status.includes("SAIL")) return `${event.raw.from_port_code || ""}→${event.raw.to_port_code || ""}`;
+      if (event.status === "TRANSSHIPMENT_UNLOAD") return `Unload ${event.tsPort || event.port}`;
+      if (event.status === "TRANSSHIPMENT_LOAD") return `Load ${event.tsPort || event.port}`;
+      if (event.status === "PHASE_OUT") return `Out ${event.vessel}`;
+      if (event.status === "PHASE_IN") return `In ${event.vessel}`;
+      return event.lane || event.port || event.status;
+    }
+
+    function isPointEvent(event) {
+      return event.end.getTime() <= event.start.getTime();
+    }
+
+    function eventWidthPercent(event, duration) {
+      return Math.max(0, ((event.end - event.start) / duration) * 100);
+    }
+
+    function eventMidpointPercent(event, range, duration) {
+      const midpoint = (event.start.getTime() + event.end.getTime()) / 2;
+      return ((midpoint - range.start.getTime()) / duration) * 100;
+    }
+
+    function isMicroIntervalEvent(event, widthPercent) {
+      if (event.status === "TRANSSHIPMENT_UNLOAD" || event.status === "TRANSSHIPMENT_LOAD") return true;
+      return widthPercent < 0.08;
+    }
+
+    function pointEventLabel(event) {
+      if (event.tsChainId && event.status === "PHASE_IN") return "TS-PI";
+      if (event.tsChainId && event.status === "PHASE_OUT") return "TS-PO";
+      return {
+        PHASE_IN: "PI",
+        PHASE_OUT: "PO",
+        DELIVERY: "DEL",
+        REDELIVERY: "RED",
+        TRANSSHIPMENT_UNLOAD: "TS-U",
+        TRANSSHIPMENT_LOAD: "TS-L",
+      }[event.status] || event.status.replaceAll("_", " ").slice(0, 8);
+    }
+
+    function sailClass(event) {
+      if (event.status === "INLANE_SAIL") return "sail-in";
+      if (event.status === "OUTLANE_SAIL") return "sail-out";
+      return "";
+    }
+
+    function bindTimelineTooltips() {
+      const tooltip = ensureTooltip();
+      document.querySelectorAll("[data-event-id]").forEach((node) => {
+        node.addEventListener("mouseenter", () => {
+          const event = findRenderedEvent(node.dataset.eventId);
+          if (!event) return;
+          tooltip.innerHTML = renderTooltip(event);
+          tooltip.classList.remove("hide");
+        });
+        node.addEventListener("mousemove", (mouseEvent) => positionTooltip(tooltip, mouseEvent));
+        node.addEventListener("mouseleave", () => tooltip.classList.add("hide"));
+      });
+    }
+
+    function bindCostTooltips() {
+      const tooltip = ensureTooltip();
+      document.querySelectorAll("[data-cost-key]").forEach((node) => {
+        node.addEventListener("mouseenter", () => {
+          const key = node.dataset.costKey;
+          const value = parseNumber(node.dataset.costValue);
+          const total = parseNumber(node.dataset.costTotal);
+          tooltip.innerHTML = renderCostTooltip(key, value, total);
+          tooltip.classList.remove("hide");
+        });
+        node.addEventListener("mousemove", (mouseEvent) => positionTooltip(tooltip, mouseEvent));
+        node.addEventListener("mouseleave", () => tooltip.classList.add("hide"));
+      });
+      document.querySelectorAll("[data-text-tooltip]").forEach((node) => {
+        node.addEventListener("mouseenter", () => {
+          tooltip.innerHTML = renderTextTooltip(node.dataset.textTooltip || "");
+          tooltip.classList.remove("hide");
+        });
+        node.addEventListener("mousemove", (mouseEvent) => positionTooltip(tooltip, mouseEvent));
+        node.addEventListener("mouseleave", () => tooltip.classList.add("hide"));
+      });
+    }
+
+    function ensureTooltip() {
+      let tooltip = document.getElementById("eventTooltip");
+      if (!tooltip) {
+        tooltip = document.createElement("div");
+        tooltip.id = "eventTooltip";
+        tooltip.className = "tooltip hide";
+        document.body.appendChild(tooltip);
+      }
+      return tooltip;
+    }
+
+    function positionTooltip(tooltip, mouseEvent) {
+      const margin = 14;
+      const rect = tooltip.getBoundingClientRect();
+      let left = mouseEvent.clientX + margin;
+      let top = mouseEvent.clientY + margin;
+      if (left + rect.width > window.innerWidth - margin) left = mouseEvent.clientX - rect.width - margin;
+      if (top + rect.height > window.innerHeight - margin) top = mouseEvent.clientY - rect.height - margin;
+      tooltip.style.left = `${Math.max(margin, left)}px`;
+      tooltip.style.top = `${Math.max(margin, top)}px`;
+    }
+
+    function findRenderedEvent(eventId) {
+      return state.eventLookup.get(eventId);
+    }
+
+    function renderTooltip(event) {
+      const rows = [
+        ["Vessel", `${event.vessel}${event.isVirtual ? " (virtual)" : ""}`],
+        ["Lane", event.lane ? `${event.lane} / ${event.proforma} / #${event.position}` : "-"],
+        ["Port", readablePort(event)],
+        ["Start", formatDateTime(event.start)],
+        ["End", formatDateTime(event.end)],
+        ["Duration", formatDuration(event.end - event.start)],
+      ];
+      if (event.tsChainId) rows.push(["TS Chain", event.tsChainId.toUpperCase()]);
+      if (event.status.includes("SAIL")) {
+        rows.push(["Route", `${event.raw.from_port_code || "-"} → ${event.raw.to_port_code || "-"}`]);
+        const distance = firstDefinedNumber(event.raw, ["distance", "sailing_distance", "total_distance"]);
+        const avgSpeed = firstDefinedNumber(event.raw, ["avg_speed", "average_speed"]);
+        if (distance !== null) rows.push(["Distance", formatNumber(distance)]);
+        if (avgSpeed !== null) rows.push(["Avg Speed", `${formatNumber(avgSpeed)} kn`]);
+      }
+      if (event.status.startsWith("TRANSSHIPMENT")) rows.push(["TS Port", event.tsPort || "-"]);
+      for (const row of eventCostDisplayRows(event)) {
+        rows.push([row.label, formatUsd(row.value)]);
+      }
+      return `
+        <div class="tooltip-title">
+          <span>${escapeHtml(eventShortLabel(event))}</span>
+          <span class="tooltip-status">${escapeHtml(event.status)}</span>
+        </div>
+        <div class="tooltip-grid">
+          ${rows.map(([key, value]) => `
+            <div class="tooltip-key">${escapeHtml(key)}</div>
+            <div class="tooltip-value">${escapeHtml(value)}</div>
+          `).join("")}
+        </div>
+      `;
+    }
+
+    function eventCostDisplayRows(event) {
+      const displayKeys = new Set(displayCostKeysForEvent(event));
+      const rows = (event.costRows || []).filter((row) => displayKeys.has(row.key));
+      const present = new Set(rows.map((row) => row.key));
+      for (const key of displayKeys) {
+        if (present.has(key)) continue;
+        rows.push({ key, label: costLabel(key), value: null });
+      }
+      return rows;
+    }
+
+    function displayCostKeysForEvent(event) {
+      const keys = [];
+      if (!event.isVirtual && (event.status.includes("SAIL") || event.status === "PORT_STAY")) keys.push("bunker_cost");
+      if (!event.isVirtual && event.status.startsWith("TRANSSHIPMENT")) keys.push("transshipment_cost");
+      if (event.isVirtual) keys.push("opportunity_cost");
+      if (!event.isVirtual && event.status === "PORT_STAY" && touchesCanalPort(event)) keys.push("canal_fee_cost");
+      return keys;
+    }
+
+    function renderCostTooltip(key, value, total) {
+      const rows = [
+        ["Amount", value === null ? "n/a" : formatUsd(value)],
+        ["Share", value !== null && total ? formatPercent(value / total) : "n/a"],
+        ["Meaning", costDescription(key)],
+      ];
+      return `
+        <div class="tooltip-title">
+          <span>${escapeHtml(costLabel(key))}</span>
+          <span class="tooltip-status">Cost</span>
+        </div>
+        <div class="tooltip-grid">
+          ${rows.map(([rowKey, rowValue]) => `
+            <div class="tooltip-key">${escapeHtml(rowKey)}</div>
+            <div class="tooltip-value">${escapeHtml(rowValue)}</div>
+          `).join("")}
+        </div>
+      `;
+    }
+
+    function renderTextTooltip(text) {
+      const lines = String(text || "").split("\n").filter(Boolean);
+      const [title, ...rows] = lines;
+      return `
+        <div class="tooltip-title">
+          <span>${escapeHtml(title || "Info")}</span>
+        </div>
+        <div class="tooltip-grid">
+          ${rows.map((line) => {
+            const index = line.indexOf(": ");
+            if (index <= 0) return `<div class="tooltip-line">${escapeHtml(line)}</div>`;
+            const key = line.slice(0, index);
+            const value = line.slice(index + 2).trim();
+            return `
+              <div class="tooltip-key">${escapeHtml(key)}</div>
+              <div class="tooltip-value">${escapeHtml(value)}</div>
+            `;
+          }).join("")}
+        </div>
+      `;
+    }
+
+    function readablePort(event) {
+      if (event.raw.from_port_code || event.raw.to_port_code) {
+        return `${event.raw.from_port_code || "-"} → ${event.raw.to_port_code || "-"}`;
+      }
+      return event.port || event.tsPort || event.raw.phase_in_port_code || event.raw.phase_out_port_code || event.raw.delivery_port_code || event.raw.redelivery_port_code || event.raw.dock_port_code || "-";
+    }
+
+    function firstDefinedNumber(source, keys) {
+      for (const key of keys) {
+        const value = parseNumber(source?.[key]);
+        if (value !== null) return value;
+      }
+      return null;
+    }
+
+    function formatDuration(ms) {
+      const minutes = Math.max(0, Math.round(ms / 60000));
+      if (minutes < 60) return `${minutes} min`;
+      const hours = minutes / 60;
+      if (hours < 48) return `${hours.toFixed(hours >= 10 ? 0 : 1)} hr`;
+      const days = hours / 24;
+      return `${days.toFixed(days >= 10 ? 0 : 1)} days`;
+    }
+
+    function getSelectedRun() {
+      return state.runs.find((run) => run.name === state.selectedRun);
+    }
+
+    function getSelectedAlgorithm() {
+      return getSelectedRun()?.algorithms.find((algorithm) => algorithm.key === state.selectedAlgorithm);
+    }
+
+    function isOk(algorithm) {
+      return (algorithm.metadata?.status || "").toLowerCase() === "ok";
+    }
+
+    function readableStatus(algorithm) {
+      const status = algorithm.metadata?.status || "unknown";
+      if (status.toLowerCase() === "ok") return "feasible";
+      if (algorithm.metadata?.error_type === "InfeasibleError") return "infeasible";
+      if (status.toLowerCase() === "error") return "error";
+      return status;
+    }
+
+    function lowerBoundIsOk(lowerBound) {
+      const runStatus = lowerBoundRunStatus(lowerBound).toLowerCase();
+      const solverStatus = lowerBoundSolverStatus(lowerBound).toUpperCase();
+      return runStatus === "ok" || solverStatus === "OPTIMAL";
+    }
+
+    function readableLowerBoundStatus(lowerBound) {
+      const runStatus = lowerBoundRunStatus(lowerBound);
+      const solverStatus = lowerBoundSolverStatus(lowerBound);
+      if (runStatus && solverStatus && runStatus.toLowerCase() === "ok") return `ok · ${solverStatus}`;
+      if (runStatus && solverStatus && runStatus !== solverStatus) return `${runStatus} · ${solverStatus}`;
+      return runStatus || solverStatus || "unknown";
+    }
+
+    function lowerBoundRunStatus(lowerBound) {
+      const status = lowerBound?.status ?? lowerBound?.metadata?.status ?? "";
+      if (isGurobiStatusCode(status)) return "";
+      return String(status || "");
+    }
+
+    function lowerBoundSolverStatus(lowerBound) {
+      const objective = lowerBound?.objective || {};
+      const metadata = lowerBound?.metadata || {};
+      return gurobiStatusText(
+        objective.status ?? metadata.model_status ?? metadata.status,
+        objective.status_name ?? metadata.model_status_name ?? metadata.status_name,
+      );
+    }
+
+    function gurobiStatusText(status, statusName) {
+      if (statusName !== undefined && statusName !== null && statusName !== "") return String(statusName);
+      const code = Number(status);
+      if (!Number.isInteger(code)) return "";
+      return {
+        1: "LOADED",
+        2: "OPTIMAL",
+        3: "INFEASIBLE",
+        4: "INF_OR_UNBD",
+        5: "UNBOUNDED",
+        6: "CUTOFF",
+        7: "ITERATION_LIMIT",
+        8: "NODE_LIMIT",
+        9: "TIME_LIMIT",
+        10: "SOLUTION_LIMIT",
+        11: "INTERRUPTED",
+        12: "NUMERIC",
+        13: "SUBOPTIMAL",
+        14: "INPROGRESS",
+        15: "USER_OBJ_LIMIT",
+      }[code] || `Gurobi ${code}`;
+    }
+
+    function isGurobiStatusCode(value) {
+      return value !== undefined && value !== null && /^\d+$/.test(String(value).trim());
+    }
+
+    function formatNumber(value) {
+      if (value === undefined || value === null || value === "" || Number.isNaN(Number(value))) return "-";
+      return new Intl.NumberFormat("en-US", { maximumFractionDigits: 2 }).format(Number(value));
+    }
+
+    function formatCompact(value) {
+      if (value === undefined || value === null || Number.isNaN(Number(value))) return "-";
+      return new Intl.NumberFormat("en-US", { notation: "compact", maximumFractionDigits: 2 }).format(Number(value));
+    }
+
+    function formatUsd(value) {
+      if (value === undefined || value === null || Number.isNaN(Number(value))) return "n/a";
+      return `$${formatNumber(value)}`;
+    }
+
+    function formatPercent(value) {
+      if (value === undefined || value === null || Number.isNaN(Number(value))) return "n/a";
+      return `${formatNumber(Number(value) * 100)}%`;
+    }
+
+    function formatPercentFixed(value, digits) {
+      if (value === undefined || value === null || Number.isNaN(Number(value))) return "n/a";
+      return `${(Number(value) * 100).toFixed(digits)}%`;
+    }
+
+    function costLabel(key) {
+      return COST_LABELS[key] || key.replaceAll("_", " ");
+    }
+
+    function costDescription(key) {
+      return COST_DESCRIPTIONS[key] || "Objective cost component";
+    }
+
+    function formatDate(date) {
+      return new Intl.DateTimeFormat("en-US", { month: "short", day: "2-digit" }).format(date);
+    }
+
+    function formatDateTime(date) {
+      return new Intl.DateTimeFormat("sv-SE", {
+        year: "numeric",
+        month: "2-digit",
+        day: "2-digit",
+        hour: "2-digit",
+        minute: "2-digit",
+        hour12: false,
+      }).format(date);
+    }
+
+    function escapeHtml(value) {
+      return String(value ?? "")
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#039;");
+    }
+  </script>
+</body>
+</html>

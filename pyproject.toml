@@ -1,0 +1,45 @@
+[tool.pytest.ini_options]
+DJANGO_SETTINGS_MODULE = "config.settings"
+python_files = "test_*.py"
+python_classes = "Test*"
+python_functions = "test_*"
+addopts = "-v --tb=short"
+
+[tool.black]
+line-length = 100
+target-version = ['py311']
+# 제외할 폴더들을 | (OR) 연산자로 구분하여 정규표현식으로 작성합니다.
+force-exclude = '''
+/(
+    \.git
+  | \.venv
+  | venv
+  | build
+  | dist
+  | migrations
+  | algorithms
+  | ocam
+)/
+'''
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+# 제외할 폴더나 파일 패턴을 리스트로 지정합니다.
+exclude = [
+    ".git",
+    ".venv",
+    "venv",
+    "build",
+    "dist",
+    "algorithms",
+    "ocam",
+    "**/migrations/*.py"  # 장고를 쓰신다면 마이그레이션 파일 제외 추천
+]
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "W"]
+
+[tool.ruff.lint.isort]
+known-first-party = ["config", "common", "api", "instance", "simulation", "result"]
+

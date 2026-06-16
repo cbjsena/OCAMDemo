@@ -1,0 +1,74 @@
+{% extends "base.html" %}
+
+{% block title %}Upload Instance - OCAM Demo{% endblock %}
+
+{% block sidebar %}
+<h6 class="sidebar-heading">Instance Menu</h6>
+<ul class="nav flex-column">
+    {% for item in sidebar_menu %}
+    <li class="nav-item">
+        <a class="nav-link text-white-50"
+           href="{% url item.url_name %}">
+            <i class="bi {{ item.icon }} me-2"></i> {{ item.name }}
+        </a>
+    </li>
+    {% endfor %}
+</ul>
+{% endblock %}
+
+{% block content %}
+<h3 class="mb-4"><i class="bi bi-upload"></i> Upload New Instance</h3>
+
+<div class="card shadow-sm">
+    <div class="card-body">
+        <h5 class="card-title mb-4">Upload Instance Folder as ZIP</h5>
+
+        <form method="post" enctype="multipart/form-data" class="mb-3">
+            {% csrf_token %}
+            <div class="row g-2 align-items-end">
+                <div class="col-md-6">
+                    <label for="id_folder_zip" class="form-label">Select ZIP File</label>
+                    <div class="input-group">
+                        <input type="file"
+                               class="form-control"
+                               id="id_folder_zip"
+                               name="folder_zip"
+                               accept=".zip"
+                               required
+                               aria-describedby="help_text">
+                        <button class="btn btn-primary" type="submit">
+                            <i class="bi bi-upload"></i> Upload
+                        </button>
+                    </div>
+                    <small id="help_text" class="form-text text-muted">
+                        Choose a ZIP file containing a valid instance folder with <code>metadata.csv</code>
+                    </small>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div class="card shadow-sm mt-4">
+    <div class="card-body">
+        <h5 class="card-title">Requirements</h5>
+        <ul class="mb-0">
+            <li>ZIP file must contain a folder with instance files</li>
+            <li>The folder must include a <code>metadata.csv</code> file</li>
+            <li>CSV files are recommended (e.g., <code>port_info.csv</code>, <code>vessel_data.csv</code>)</li>
+            <li>Instance name will be derived from ZIP filename (without extension)</li>
+        </ul>
+    </div>
+</div>
+
+<div class="card shadow-sm mt-4">
+    <div class="card-body">
+        <h5 class="card-title">Example Structure</h5>
+        <pre>my_instance.zip
+├── metadata.csv        (required)
+├── port_info.csv
+└── vessel_data.csv</pre>
+    </div>
+</div>
+{% endblock %}
+

@@ -1,0 +1,79 @@
+{% extends "base.html" %}
+
+{% block title %}Result Detail - OCAM Demo{% endblock %}
+
+{% block sidebar %}
+<h6 class="sidebar-heading">Results</h6>
+<ul class="nav flex-column">
+    {% for r in results %}
+    <li class="nav-item">
+        <a class="nav-link {% if r.folder == current_folder and r.filename == current_filename %}active{% else %}text-white-50{% endif %}"
+           href="{% url 'result:result_detail' folder=r.folder filename=r.filename %}">
+            <i class="bi bi-file-earmark-code me-1"></i>
+            <small>{{ r.folder }}<br>{{ r.filename }}</small>
+        </a>
+    </li>
+    {% endfor %}
+</ul>
+{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h4>
+        <i class="bi bi-file-earmark-code"></i>
+        {{ current_folder }} / {{ current_filename }}
+    </h4>
+    <a href="{% url 'result:result_list' %}" class="btn btn-outline-secondary btn-sm">
+        <i class="bi bi-arrow-left"></i> Back to List
+    </a>
+</div>
+
+<!-- Summary Cards -->
+<div class="row mb-4">
+    <div class="col-md-3">
+        <div class="card text-center shadow-sm">
+            <div class="card-body">
+                <h6 class="text-muted">Instance</h6>
+                <h5>{{ data.instance_name }}</h5>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card text-center shadow-sm">
+            <div class="card-body">
+                <h6 class="text-muted">Algorithm</h6>
+                <h5>{{ data.algorithm_name }}</h5>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card text-center shadow-sm">
+            <div class="card-body">
+                <h6 class="text-muted">Objective Value</h6>
+                <h5 class="text-primary">
+                    {% if data.objective_value %}{{ data.objective_value }}{% else %}-{% endif %}
+                </h5>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card text-center shadow-sm">
+            <div class="card-body">
+                <h6 class="text-muted">Execution Time</h6>
+                <h5>{% if data.execution_time %}{{ data.execution_time }}s{% else %}-{% endif %}</h5>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Raw JSON -->
+<div class="card shadow-sm">
+    <div class="card-header bg-dark text-white">
+        <i class="bi bi-code-slash"></i> Raw JSON
+    </div>
+    <div class="card-body bg-light">
+        <pre class="mb-0" style="max-height: 500px; overflow-y: auto;"><code>{{ formatted_json }}</code></pre>
+    </div>
+</div>
+{% endblock %}
+

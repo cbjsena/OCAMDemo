@@ -1,0 +1,205 @@
+# Django 프로젝트 Render 배포 가이드
+
+# 1. 목적
+로컬에서 개발 중인 Django 프로젝트를 Render에 배포하여 웹 서비스로 운영한다.
+
+현재 환경
+* Django
+* SQLite
+* Celery(Eager Mode)
+* GitHub Repository 사용
+* Render Web Service 사용
+------------------------------------
+
+
+# 2. GitHub 준비
+프로젝트를 GitHub에 업로드한다.
+
+###### terminal 명령어
+git add .
+git commit -m "Initial commit"
+
+git remote add origin https://github.com/<username>/<repository>.git
+git push -u origin main
+------------------------------------
+
+
+# 3. .gitignore 설정
+민감 정보 및 생성 파일은 저장소에 포함하지 않는다.
+
+.env*
+db.sqlite3
+logs/
+media/
+staticfiles/
+__pycache__/
+*.pyc
+------------------------------------
+
+
+# 4. 추가 패키지 설치
+배포에 필요한 패키지를 설치한다.
+Render는 Gunicorn을 통해 Django를 실행한다.
+Static 파일 제공을 위해 WhiteNoise를 사용한다.
+
+pip install gunicorn, whitenoise
+------------------------------------
+
+
+# 5. requirements.txt 생성
+Render가 필요한 패키지를 설치할 수 있도록 requirements.txt를 생성한다.
+
+pip freeze > requirements.txt
+------------------------------------
+
+
+# 6. settings.py 수정
+###### WhiteNoise Middleware 추가
+MIDDLEWARE = [
+    "django.middleware.security.SecurityMiddleware",
+    "whitenoise.middleware.WhiteNoiseMiddleware",
+
+    "django.contrib.sessions.middleware.SessionMiddleware",
+    "django.middleware.common.CommonMiddleware",
+    ...
+]
+------------------------------------
+
+###### Static 설정
+STATIC_URL = "/static/"
+STATIC_ROOT = BASE_DIR / "staticfiles"
+
+###### 하단에 추가
+STATICFILES_STORAGE = (
+    "whitenoise.storage.CompressedManifestStaticFilesStorage"
+)
+
+###### Render 환경 분리
+###### Render에서는 환경변수를 Dashboard에서 직접 주입한다.
+APP_ENV = os.environ.get("APP_ENV", "local")
+
+if APP_ENV == "docker":
+    env_path = BASE_DIR / ".env.docker"
+    load_dotenv(env_path)
+
+elif APP_ENV == "render":
+    pass
+
+else:
+    env_path = BASE_DIR / ".env.local"
+    load_dotenv(env_path)
+
+###### HTTPS 설정
+if APP_ENV == "render":
+    SESSION_COOKIE_SECURE = True
+    CSRF_COOKIE_SECURE = True
+
+    CSRF_TRUSTED_ORIGINS = [
+        "https://<service-name>.onrender.com"
+    ]
+------------------------------------
+
+# 7. Render 가입 후 설정
+Render 계정 생성 후 GitHub 연동
+https://render.com
+
+###### Web Service 생성
+Dashboard
+
+New(우측상단) +
+→ Web Service 선택하면 자동으로 GitHub Repository 선택 화면으로 이동한다.
+
+###### Build Command
+pip install -r requirements.txt
+python manage.py collectstatic --noinput
+python manage.py migrate
+------------------------------------
+
+###### Start Command
+gunicorn config.wsgi:application
+------------------------------------
+
+###### Environment Variables 설정
+Render Dashboard → Environment
+
+등록 항목
+APP_ENV=render
+DEBUG=False
+SECRET_KEY=<강력한 랜덤 문자열>
+ALLOWED_HOSTS=<service-name>.onrender.com
+
+예시
+APP_ENV=render
+DEBUG=False
+SECRET_KEY=a-long-random-secret-key
+ALLOWED_HOSTS=ocamdemo.onrender.com
+------------------------------------
+
+# 9. 배포 실행
+Create Web Service 클릭하면 Render가 자동으로 아래 과정 실행한다.
+
+1. requirements.txt 설치
+2. collectstatic 실행
+3. migrate 실행
+4. Gunicorn 실행
+------------------------------------
+
+# 10. SQLite 사용 시 주의사항
+현재 설정
+
+DATABASES = {
+    "default": {
+        "ENGINE": "django.db.backends.sqlite3",
+        "NAME": BASE_DIR / "db.sqlite3",
+    }
+}
+
+개인 프로젝트는 사용 가능하다.
+
+단점
+* 서버 재배포 시 데이터 손실 가능
+* 인스턴스 교체 시 데이터 초기화 가능
+
+운영 서비스라면 PostgreSQL 사용 권장.
+------------------------------------
+
+# 11. Celery 사용 시 주의사항
+현재 Render 환경에서는
+
+```python
+CELERY_TASK_ALWAYS_EAGER = True
+```
+
+로 동작하게 된다.
+
+따라서
+
+```python
+task.delay(...)
+```
+
+호출 시 실제로는 동기 방식으로 즉시 실행된다.
+
+개인 프로젝트는 문제없다.
+
+대규모 작업이 필요할 경우
+
+* Redis
+* Celery Worker
+
+를 별도 Render 서비스로 추가 구성한다.
+
+------------------------------------
+
+# 20. 최종 체크리스트
+
+* GitHub Push 완료
+* requirements.txt 생성
+* gunicorn 설치
+* whitenoise 설치
+* DEBUG=False
+* ALLOWED_HOSTS 설정
+* SECRET_KEY 설정
+* collectstatic 성공 확인
+* Render 환경변수 등록
+* 배포 완료 확인

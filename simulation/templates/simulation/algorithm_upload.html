@@ -1,0 +1,66 @@
+{% extends "base.html" %}
+
+{% block title %}Algorithm Upload - OCAM Demo{% endblock %}
+
+{% block sidebar %}
+<h6 class="sidebar-heading">Simulation Menu</h6>
+<ul class="nav flex-column">
+    {% for item in sidebar_menu %}
+    <li class="nav-item">
+        <a class="nav-link {% if current_sidebar_menu == item.key %}active{% else %}text-white-50{% endif %}"
+           href="{% url item.url_name %}">
+            <i class="bi {{ item.icon }} me-2"></i> {{ item.name }}
+        </a>
+    </li>
+    {% endfor %}
+</ul>
+{% endblock %}
+
+{% block content %}
+<h3 class="mb-4"><i class="bi bi-cloud-upload"></i> Algorithm Upload</h3>
+
+<div class="card shadow-sm" style="max-width: 760px;">
+    <div class="card-body">
+        <form method="post" enctype="multipart/form-data">
+            {% csrf_token %}
+            <div class="mb-3">
+                <label for="algorithm_zip" class="form-label fw-bold">Algorithm ZIP</label>
+                <input type="file" id="algorithm_zip" name="algorithm_zip" class="form-control" accept=".zip" required>
+                <div class="form-text">Upload one algorithm package as ZIP file.</div>
+            </div>
+
+            <button type="submit" class="btn btn-primary">
+                <i class="bi bi-upload"></i> Upload Algorithm
+            </button>
+            <a href="{% url 'simulation:simulation_create' %}" class="btn btn-outline-secondary ms-2">
+                Go to Create Simulation
+            </a>
+        </form>
+    </div>
+</div>
+
+<div class="card shadow-sm mt-4" style="max-width: 760px;">
+    <div class="card-body">
+        <h5 class="card-title">Required ZIP Structure</h5>
+        <pre class="mb-0"><code>algorithms/
+└── &lt;researcher_name&gt;/
+    └── &lt;algorithm_name&gt;/
+        ├── __init__.py
+        └── solver.py</code></pre>
+        <div class="form-text mt-2">The outer <code>algorithms/</code> folder is optional.</div>
+    </div>
+</div>
+
+<div class="card shadow-sm mt-4" style="max-width: 760px;">
+    <div class="card-body">
+        <h5 class="card-title">Minimum solver.py Contract</h5>
+        <pre class="mb-0"><code>from ocam.models import CascadingSolution, InstanceData
+
+DESCRIPTION = "One-line description"
+
+def algorithm(instance_data: InstanceData, timelimit: int) -&gt; CascadingSolution:
+    ...</code></pre>
+    </div>
+</div>
+{% endblock %}
+
