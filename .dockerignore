@@ -1,0 +1,68 @@
+# Git 관련
+.git
+.gitignore
+.github
+
+# Python 캐시
+__pycache__
+*.py[cod]
+*$py.class
+*.so
+.Python
+*.egg-info/
+dist/
+build/
+.eggs/
+
+# 환경변수 파일
+.env
+.env.local
+.env.docker
+.env.render
+
+# 데이터베이스
+db.sqlite3
+*.db
+
+# IDE/Editor
+.vscode
+.idea
+*.swp
+*.swo
+*.swn
+.DS_Store
+*.sublime-project
+*.sublime-workspace
+
+# 테스트 및 커버리지
+.pytest_cache
+.coverage
+htmlcov/
+.tox/
+
+# 가상환경
+.venv
+venv/
+ENV/
+env/
+
+# 정적 파일 및 미디어 (빌드 시 수집됨)
+staticfiles/
+media/
+
+# 로그 파일
+logs/
+*.log
+
+# Django 마이그레이션 (선택, 일반적으로 포함되어야 함)
+# migrations/ (주석: 마이그레이션은 포함해야 함)
+
+# 프로젝트 특화 파일
+outputs/  # 빌드 시에는 제외, 하지만 volume으로 마운트
+instances/  # 빌드 시에는 제외, 하지만 volume으로 마운트
+
+# 임시 파일
+*.tmp
+*.temp
+.cache
+

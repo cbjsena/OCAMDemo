@@ -1,0 +1,123 @@
+[orchestrator] wsgoh/mip_twostage_v10 algorithm call begin | step=0.00s total=0.00s
+heuristic_yongs variant only_virtual1_lowest: virtual_portstays=679, virtual_vessels=39, declared=33
+heuristic_yongs variant only_virtual1_highest: virtual_portstays=516, virtual_vessels=39, declared=33
+heuristic_yongs variant only_virtual1_spread: virtual_portstays=598, virtual_vessels=39, declared=33
+heuristic_yongs variant only_virtual1_offset_1: virtual_portstays=651, virtual_vessels=39, declared=33
+heuristic_yongs variant only_virtual1_offset_2: virtual_portstays=626, virtual_vessels=39, declared=33
+heuristic_yongs variant only_virtual2_lowest: virtual_portstays=26, virtual_vessels=2, declared=33
+heuristic_yongs variant only_virtual2_highest: virtual_portstays=0, virtual_vessels=0, declared=33
+heuristic_yongs variant only_virtual2_spread: virtual_portstays=18, virtual_vessels=1, declared=33
+heuristic_yongs variant only_virtual2_offset_1: virtual_portstays=0, virtual_vessels=0, declared=33
+heuristic_yongs variant only_virtual2_offset_2: virtual_portstays=0, virtual_vessels=0, declared=33
+[Evaluation] Bunker Cost: 0.01%, Canal Fee: 0.00%, Transshipment Cost: 0.00%, Opportunity Cost: 99.99%, #Virtual Vessels: 39
+[Evaluation] Bunker Cost: 0.01%, Canal Fee: 0.00%, Transshipment Cost: 0.00%, Opportunity Cost: 99.99%, #Virtual Vessels: 39
+[Evaluation] Bunker Cost: 0.01%, Canal Fee: 0.00%, Transshipment Cost: 0.00%, Opportunity Cost: 99.99%, #Virtual Vessels: 39
+[Evaluation] Bunker Cost: 0.01%, Canal Fee: 0.00%, Transshipment Cost: 0.00%, Opportunity Cost: 99.99%, #Virtual Vessels: 39
+[Evaluation] Bunker Cost: 0.01%, Canal Fee: 0.00%, Transshipment Cost: 0.00%, Opportunity Cost: 99.99%, #Virtual Vessels: 39
+[Evaluation] Bunker Cost: 2.00%, Canal Fee: 0.56%, Transshipment Cost: 0.02%, Opportunity Cost: 97.41%, #Virtual Vessels: 2
+[Evaluation] Bunker Cost: 78.72%, Canal Fee: 20.24%, Transshipment Cost: 1.04%, Opportunity Cost: 0.00%, #Virtual Vessels: 0
+[Evaluation] Bunker Cost: 2.22%, Canal Fee: 0.59%, Transshipment Cost: 0.03%, Opportunity Cost: 97.16%, #Virtual Vessels: 1
+[Evaluation] Bunker Cost: 77.49%, Canal Fee: 21.61%, Transshipment Cost: 0.90%, Opportunity Cost: 0.00%, #Virtual Vessels: 0
+[Evaluation] Bunker Cost: 78.11%, Canal Fee: 20.96%, Transshipment Cost: 0.93%, Opportunity Cost: 0.00%, #Virtual Vessels: 0
+wsgoh/mip_twostage_v10 heuristic_yongs seed variants ready
+- seed variants: 10
+- canonical warm-start seed: only_virtual2_highest
+- active warm-start seed: only_virtual2_highest
+- zero-virtual seeds: 3
+  - only_virtual1_lowest: cost=2083098664980.498047, virtual PortStay=679, virtual vessels=39, declared=33
+  - only_virtual1_highest: cost=1484308892834.663330, virtual PortStay=516, virtual vessels=39, declared=33
+  - only_virtual1_spread: cost=1779075098522.161865, virtual PortStay=598, virtual vessels=39, declared=33
+  - only_virtual1_offset_1: cost=1996452308042.996826, virtual PortStay=651, virtual vessels=39, declared=33
+  - only_virtual1_offset_2: cost=1911712259001.328369, virtual PortStay=626, virtual vessels=39, declared=33
+  - only_virtual2_lowest: cost=17047668892.312614, virtual PortStay=26, virtual vessels=2, declared=33
+  * only_virtual2_highest: cost=381569389.998517, virtual PortStay=0, virtual vessels=0, declared=33
+  - only_virtual2_spread: cost=14320971144.148712, virtual PortStay=18, virtual vessels=1, declared=33
+  - only_virtual2_offset_1: cost=441307291.369545, virtual PortStay=0, virtual vessels=0, declared=33
+  - only_virtual2_offset_2: cost=427847720.689886, virtual PortStay=0, virtual vessels=0, declared=33
+wsgoh/mip_twostage_v10 seed/base pattern pool ready
+- seed patterns: 2179 (actual-candidate=917, actual-primary-virtual=504, actual-seed=560, virtual-seed=198)
+- empty actual patterns: 28
+- virtual fallback patterns: 97
+wsgoh/mip_twostage_v10 cascade-chain candidates ready
+- max depth: 1
+- actual=53, virtual_residual=10
+- diagnostics: cascade_chain_actual=53, cascade_chain_virtual=10, only_virtual1_highest_candidate_vessels_screened=100, only_virtual1_highest_cascade_actual_patterns=10, only_virtual1_highest_cascade_virtual_patterns=0, only_virtual1_highest_chain_patterns_added=10, only_virtual1_highest_chains_generated=10, only_virtual1_highest_chains_positive_reduction=10, only_virtual1_highest_displacement_moves_feasible=30, only_virtual1_highest_dominated_move=16, only_virtual1_highest_free_primary_infeasible=70, only_virtual1_highest_free_vessel_count=28, only_virtual1_highest_handover_options_generated=30, only_virtual1_highest_source_block_count=28, only_virtual1_highest_target_holes_considered=10, only_virtual1_highest_virtual_hole_count=10, only_virtual1_lowest_candidate_vessels_screened=100, only_virtual1_lowest_cascade_actual_patterns=10, only_virtual1_lowest_cascade_virtual_patterns=2, only_virtual1_lowest_chain_patterns_added=12, only_virtual1_lowest_chains_generated=10, only_virtual1_lowest_chains_positive_reduction=10, only_virtual1_lowest_displacement_moves_feasible=29, only_virtual1_lowest_dominated_move=16, only_virtual1_lowest_free_primary_infeasible=71, only_virtual1_lowest_free_vessel_count=28, only_virtual1_lowest_handover_options_generated=29, only_virtual1_lowest_source_block_count=28, only_virtual1_lowest_target_holes_considered=10, only_virtual1_lowest_virtual_hole_count=10, only_virtual1_offset_1_candidate_vessels_screened=100, only_virtual1_offset_1_cascade_actual_patterns=10, only_virtual1_offset_1_cascade_virtual_patterns=2, only_virtual1_offset_1_chain_patterns_added=12, only_virtual1_offset_1_chains_generated=10, only_virtual1_offset_1_chains_positive_reduction=10, only_virtual1_offset_1_displacement_moves_feasible=31, only_virtual1_offset_1_dominated_move=18, only_virtual1_offset_1_free_primary_infeasible=69, only_virtual1_offset_1_free_vessel_count=28, only_virtual1_offset_1_handover_options_generated=31, only_virtual1_offset_1_source_block_count=28, only_virtual1_offset_1_target_holes_considered=10, only_virtual1_offset_1_virtual_hole_count=10, only_virtual1_offset_2_candidate_vessels_screened=100, only_virtual1_offset_2_cascade_actual_patterns=10, only_virtual1_offset_2_cascade_virtual_patterns=2, only_virtual1_offset_2_chain_patterns_added=12, only_virtual1_offset_2_chains_generated=10, only_virtual1_offset_2_chains_positive_reduction=10, only_virtual1_offset_2_displacement_moves_feasible=30, only_virtual1_offset_2_dominated_move=18, only_virtual1_offset_2_free_primary_infeasible=70, only_virtual1_offset_2_free_vessel_count=28, only_virtual1_offset_2_handover_options_generated=30, only_virtual1_offset_2_source_block_count=28, only_virtual1_offset_2_target_holes_considered=10, only_virtual1_offset_2_virtual_hole_count=10, only_virtual1_spread_candidate_vessels_screened=100, only_virtual1_spread_cascade_actual_patterns=10, only_virtual1_spread_cascade_virtual_patterns=2, only_virtual1_spread_chain_patterns_added=12, only_virtual1_spread_chains_generated=10, only_virtual1_spread_chains_positive_reduction=10, only_virtual1_spread_displacement_moves_feasible=25, only_virtual1_spread_dominated_move=12, only_virtual1_spread_free_primary_infeasible=75, only_virtual1_spread_free_vessel_count=28, only_virtual1_spread_handover_options_generated=25, only_virtual1_spread_source_block_count=28, only_virtual1_spread_target_holes_considered=10, only_virtual1_spread_virtual_hole_count=10, only_virtual2_highest_cascade_actual_patterns=0, only_virtual2_highest_cascade_virtual_patterns=0, only_virtual2_highest_chain_patterns_added=0, only_virtual2_highest_chains_generated=0, only_virtual2_highest_chains_positive_reduction=0, only_virtual2_highest_free_vessel_count=23, only_virtual2_highest_source_block_count=67, only_virtual2_highest_virtual_hole_count=0, only_virtual2_lowest_candidate_vessels_screened=90, only_virtual2_lowest_cascade_actual_patterns=3, only_virtual2_lowest_cascade_virtual_patterns=2, only_virtual2_lowest_chain_patterns_added=5, only_virtual2_lowest_chains_generated=3, only_virtual2_lowest_chains_positive_reduction=3, only_virtual2_lowest_displacement_moves_feasible=9, only_virtual2_lowest_dominated_move=6, only_virtual2_lowest_free_primary_infeasible=81, only_virtual2_lowest_free_vessel_count=24, only_virtual2_lowest_handover_options_generated=9, only_virtual2_lowest_source_block_count=65, only_virtual2_lowest_target_holes_considered=9, only_virtual2_lowest_virtual_hole_count=9, only_virtual2_offset_1_cascade_actual_patterns=0, only_virtual2_offset_1_cascade_virtual_patterns=0, only_virtual2_offset_1_chain_patterns_added=0, only_virtual2_offset_1_chains_generated=0, only_virtual2_offset_1_chains_positive_reduction=0, only_virtual2_offset_1_free_vessel_count=22, only_virtual2_offset_1_source_block_count=67, only_virtual2_offset_1_virtual_hole_count=0, only_virtual2_offset_2_cascade_actual_patterns=0, only_virtual2_offset_2_cascade_virtual_patterns=0, only_virtual2_offset_2_chain_patterns_added=0, only_virtual2_offset_2_chains_generated=0, only_virtual2_offset_2_chains_positive_reduction=0, only_virtual2_offset_2_free_vessel_count=22, only_virtual2_offset_2_source_block_count=67, only_virtual2_offset_2_virtual_hole_count=0, only_virtual2_spread_candidate_vessels_screened=60, only_virtual2_spread_cascade_actual_patterns=0, only_virtual2_spread_cascade_virtual_patterns=0, only_virtual2_spread_chain_patterns_added=0, only_virtual2_spread_chains_generated=0, only_virtual2_spread_chains_positive_reduction=0, only_virtual2_spread_free_primary_infeasible=60, only_virtual2_spread_free_vessel_count=24, only_virtual2_spread_handover_options_generated=0, only_virtual2_spread_source_block_count=66, only_virtual2_spread_target_holes_considered=6, only_virtual2_spread_virtual_hole_count=6
+wsgoh/mip_twostage_v10 initial pool
+- seed variants: 10
+- canonical warm-start seed: only_virtual2_highest
+- active warm-start seed: only_virtual2_highest
+- raw actual families: actual-candidate=917, actual-empty=28, actual-primary-virtual=504, actual-seed=560, cascade-chain-actual=53
+- fallback pool families: actual-candidate=176, actual-empty=23, actual-primary-virtual=140, actual-seed=156, cascade-chain-actual=29, virtual-full=97, virtual-prefix=10, virtual-seed=198
+- actual-only pool families: actual-candidate=176, actual-empty=23, actual-primary-virtual=140, actual-seed=156, cascade-chain-actual=29
+- chain diagnostics: cascade_chain_actual=53, cascade_chain_virtual=10, only_virtual1_highest_candidate_vessels_screened=100, only_virtual1_highest_cascade_actual_patterns=10, only_virtual1_highest_cascade_virtual_patterns=0, only_virtual1_highest_chain_patterns_added=10, only_virtual1_highest_chains_generated=10, only_virtual1_highest_chains_positive_reduction=10, only_virtual1_highest_displacement_moves_feasible=30, only_virtual1_highest_dominated_move=16, only_virtual1_highest_free_primary_infeasible=70, only_virtual1_highest_free_vessel_count=28, only_virtual1_highest_handover_options_generated=30, only_virtual1_highest_source_block_count=28, only_virtual1_highest_target_holes_considered=10, only_virtual1_highest_virtual_hole_count=10, only_virtual1_lowest_candidate_vessels_screened=100, only_virtual1_lowest_cascade_actual_patterns=10, only_virtual1_lowest_cascade_virtual_patterns=2, only_virtual1_lowest_chain_patterns_added=12, only_virtual1_lowest_chains_generated=10, only_virtual1_lowest_chains_positive_reduction=10, only_virtual1_lowest_displacement_moves_feasible=29, only_virtual1_lowest_dominated_move=16, only_virtual1_lowest_free_primary_infeasible=71, only_virtual1_lowest_free_vessel_count=28, only_virtual1_lowest_handover_options_generated=29, only_virtual1_lowest_source_block_count=28, only_virtual1_lowest_target_holes_considered=10, only_virtual1_lowest_virtual_hole_count=10, only_virtual1_offset_1_candidate_vessels_screened=100, only_virtual1_offset_1_cascade_actual_patterns=10, only_virtual1_offset_1_cascade_virtual_patterns=2, only_virtual1_offset_1_chain_patterns_added=12, only_virtual1_offset_1_chains_generated=10, only_virtual1_offset_1_chains_positive_reduction=10, only_virtual1_offset_1_displacement_moves_feasible=31, only_virtual1_offset_1_dominated_move=18, only_virtual1_offset_1_free_primary_infeasible=69, only_virtual1_offset_1_free_vessel_count=28, only_virtual1_offset_1_handover_options_generated=31, only_virtual1_offset_1_source_block_count=28, only_virtual1_offset_1_target_holes_considered=10, only_virtual1_offset_1_virtual_hole_count=10, only_virtual1_offset_2_candidate_vessels_screened=100, only_virtual1_offset_2_cascade_actual_patterns=10, only_virtual1_offset_2_cascade_virtual_patterns=2, only_virtual1_offset_2_chain_patterns_added=12, only_virtual1_offset_2_chains_generated=10, only_virtual1_offset_2_chains_positive_reduction=10, only_virtual1_offset_2_displacement_moves_feasible=30, only_virtual1_offset_2_dominated_move=18, only_virtual1_offset_2_free_primary_infeasible=70, only_virtual1_offset_2_free_vessel_count=28, only_virtual1_offset_2_handover_options_generated=30, only_virtual1_offset_2_source_block_count=28, only_virtual1_offset_2_target_holes_considered=10, only_virtual1_offset_2_virtual_hole_count=10, only_virtual1_spread_candidate_vessels_screened=100, only_virtual1_spread_cascade_actual_patterns=10, only_virtual1_spread_cascade_virtual_patterns=2, only_virtual1_spread_chain_patterns_added=12, only_virtual1_spread_chains_generated=10, only_virtual1_spread_chains_positive_reduction=10, only_virtual1_spread_displacement_moves_feasible=25, only_virtual1_spread_dominated_move=12, only_virtual1_spread_free_primary_infeasible=75, only_virtual1_spread_free_vessel_count=28, only_virtual1_spread_handover_options_generated=25, only_virtual1_spread_source_block_count=28, only_virtual1_spread_target_holes_considered=10, only_virtual1_spread_virtual_hole_count=10, only_virtual2_highest_cascade_actual_patterns=0, only_virtual2_highest_cascade_virtual_patterns=0, only_virtual2_highest_chain_patterns_added=0, only_virtual2_highest_chains_generated=0, only_virtual2_highest_chains_positive_reduction=0, only_virtual2_highest_free_vessel_count=23, only_virtual2_highest_source_block_count=67, only_virtual2_highest_virtual_hole_count=0, only_virtual2_lowest_candidate_vessels_screened=90, only_virtual2_lowest_cascade_actual_patterns=3, only_virtual2_lowest_cascade_virtual_patterns=2, only_virtual2_lowest_chain_patterns_added=5, only_virtual2_lowest_chains_generated=3, only_virtual2_lowest_chains_positive_reduction=3, only_virtual2_lowest_displacement_moves_feasible=9, only_virtual2_lowest_dominated_move=6, only_virtual2_lowest_free_primary_infeasible=81, only_virtual2_lowest_free_vessel_count=24, only_virtual2_lowest_handover_options_generated=9, only_virtual2_lowest_source_block_count=65, only_virtual2_lowest_target_holes_considered=9, only_virtual2_lowest_virtual_hole_count=9, only_virtual2_offset_1_cascade_actual_patterns=0, only_virtual2_offset_1_cascade_virtual_patterns=0, only_virtual2_offset_1_chain_patterns_added=0, only_virtual2_offset_1_chains_generated=0, only_virtual2_offset_1_chains_positive_reduction=0, only_virtual2_offset_1_free_vessel_count=22, only_virtual2_offset_1_source_block_count=67, only_virtual2_offset_1_virtual_hole_count=0, only_virtual2_offset_2_cascade_actual_patterns=0, only_virtual2_offset_2_cascade_virtual_patterns=0, only_virtual2_offset_2_chain_patterns_added=0, only_virtual2_offset_2_chains_generated=0, only_virtual2_offset_2_chains_positive_reduction=0, only_virtual2_offset_2_free_vessel_count=22, only_virtual2_offset_2_source_block_count=67, only_virtual2_offset_2_virtual_hole_count=0, only_virtual2_spread_candidate_vessels_screened=60, only_virtual2_spread_cascade_actual_patterns=0, only_virtual2_spread_cascade_virtual_patterns=0, only_virtual2_spread_chain_patterns_added=0, only_virtual2_spread_chains_generated=0, only_virtual2_spread_chains_positive_reduction=0, only_virtual2_spread_free_primary_infeasible=60, only_virtual2_spread_free_vessel_count=24, only_virtual2_spread_handover_options_generated=0, only_virtual2_spread_source_block_count=66, only_virtual2_spread_target_holes_considered=6, only_virtual2_spread_virtual_hole_count=6
+- fallback prune: input=2367, retained=829, schedule_dup=1538, coverage_dup=0, vessel_cap=0, total_cap=0, orphan=0
+- actual prune: input=2062, retained=524, schedule_dup=1538, coverage_dup=0, vessel_cap=0, total_cap=0, orphan=0
+- Phase-I coverage precheck: fixed_missing_events=0, selectable_positions_without_any=0
+wsgoh/mip_twostage_v10 Phase-I feasibility skipped
+- reason: a heuristic seed is already zero-virtual
+- seed: only_virtual2_highest
+- warm-start actual patterns: 56
+Restricted license - for non-production use only - expires 2027-11-29
+Set parameter OutputFlag to value 1
+Set parameter LogToConsole to value 1
+Set parameter TimeLimit to value 1
+Gurobi Optimizer version 13.0.2 build v13.0.2rc1 (win64 - Windows 11+.0 (26200.2))
+
+CPU model: 12th Gen Intel(R) Core(TM) i7-1260P, instruction set [SSE2|AVX|AVX2]
+Thread count: 12 physical cores, 16 logical processors, using up to 16 threads
+
+Non-default parameters:
+TimeLimit  1
+
+Optimize a model with 1793 rows, 593 columns and 12095 nonzeros (Min)
+Model fingerprint: 0xb26d2579
+Model has 495 linear objective coefficients
+Variable types: 0 continuous, 593 integer (593 binary)
+Coefficient statistics:
+  Matrix range     [1e+00, 1e+00]
+  Objective range  [6e+04, 2e+07]
+  Bounds range     [1e+00, 1e+00]
+  RHS range        [1e+00, 7e+00]
+
+Loaded user MIP start with objective 3.81569e+08
+
+Presolve removed 1739 rows and 377 columns
+Presolve time: 0.11s
+Presolved: 54 rows, 216 columns, 438 nonzeros
+Found heuristic solution: objective 3.799366e+08
+Variable types: 0 continuous, 216 integer (216 binary)
+
+Root relaxation: objective 3.770346e+08, 92 iterations, 0.00 seconds (0.00 work units)
+
+    Nodes    |    Current Node    |     Objective Bounds      |     Work
+ Expl Unexpl |  Obj  Depth IntInf | Incumbent    BestBd   Gap | It/Node Time
+
+*    0     0               0    3.770346e+08 3.7703e+08  0.00%     -    0s
+
+Explored 1 nodes (92 simplex iterations) in 0.13 seconds (0.01 work units)
+Thread count was 16 (of 16 available processors)
+
+Solution count 3: 3.77035e+08 3.79937e+08 3.81569e+08 
+
+Optimal solution found (tolerance 1.00e-04)
+Best objective 3.770345886143e+08, best bound 3.770345886143e+08, gap 0.0000%
+[Evaluation] Bunker Cost: 79.35%, Canal Fee: 19.60%, Transshipment Cost: 1.05%, Opportunity Cost: 0.00%, #Virtual Vessels: 0
+wsgoh/mip_twostage_v10 final actual-only result
+- status: FEASIBLE (OPTIMAL)
+- solve time: 0.33s
+- selected families: actual-candidate=11, actual-empty=1, actual-primary-virtual=5, actual-seed=37, cascade-chain-actual=2
+- objective pattern cost: 377034588.614323
+- evaluated total cost: 377034588.614320
+- mixed fallback skipped because zero-virtual seed shortcut succeeded
+wsgoh/mip_twostage_v10 validation-filtered local search postprocess
+- label: zero_seed_actual_cost
+- original evaluated cost: 377034588.614320
+- cleanup initial: no_op
+- ts chains seen: 6, candidates tested: 6, accepted: 0, rejected validation: 0, rejected no improvement: 6, best delta: 0.000000
+- position shift enabled: True, skip reason: -
+- position TS target vessels: 12, position targets: 0, candidates tested: 0, accepted: 0, rejected validation: 0, rejected no improvement: 0, best delta: 0.000000
+- cleanup final: no_op
+- final evaluated cost: 377034588.614320
+- total delta: 0.000000
+- final status: ok
+[orchestrator] wsgoh/mip_twostage_v10 algorithm call returned type=CascadingSolution | step=90.97s total=90.97s

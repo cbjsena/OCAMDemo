@@ -150,23 +150,27 @@ OUTPUTS_DIR = BASE_DIR / "outputs"
 # ==========================================
 # Celery Configuration (항목 D)
 # ==========================================
-CELERY_BROKER_URL = os.getenv(
-    "CELERY_BROKER_URL",
-    "redis://redis:6379/0" if APP_ENV == "docker" else "",
-)
-CELERY_RESULT_BACKEND = os.getenv(
-    "CELERY_RESULT_BACKEND",
-    "redis://redis:6379/0" if APP_ENV == "docker" else "",
-)
+# 1. .env에서 EAGER 모드를 명시적으로 켰는지 최우선으로 확인
+# (문자열 'True'를 boolean True로 변환)
+env_eager = os.environ.get("CELERY_TASK_ALWAYS_EAGER", "False").lower() == "true"
 
-if CELERY_BROKER_URL and CELERY_RESULT_BACKEND:
-    CELERY_TASK_ALWAYS_EAGER = False
-else:
-    print("[LOCAL] Celery running in EAGER mode (Synchronous)")
+if env_eager:
+    print(f"[{APP_ENV.upper()}] Celery running in EAGER mode (Synchronous)")
     CELERY_TASK_ALWAYS_EAGER = True
     CELERY_TASK_EAGER_PROPAGATES = True
     CELERY_BROKER_URL = "memory://"
     CELERY_RESULT_BACKEND = "cache+memory://"
+else:
+    # EAGER 모드가 아닐 때만 Redis URL 설정 적용
+    CELERY_BROKER_URL = os.getenv(
+        "CELERY_BROKER_URL",
+        "redis://redis:6379/0" if APP_ENV == "docker" else "",
+    )
+    CELERY_RESULT_BACKEND = os.getenv(
+        "CELERY_RESULT_BACKEND",
+        "redis://redis:6379/0" if APP_ENV == "docker" else "",
+    )
+    CELERY_TASK_ALWAYS_EAGER = False
 
 CELERY_RESULT_EXPIRES = 3600
 CELERY_ACCEPT_CONTENT = ["json"]
@@ -178,12 +182,13 @@ CELERY_TIMEZONE = TIME_ZONE
 # HTTPS / Security (항목 L)
 # ==========================================
 if APP_ENV == "docker":
-    SESSION_COOKIE_SECURE = True
-    CSRF_COOKIE_SECURE = True
+    SESSION_COOKIE_SECURE = os.environ.get("SESSION_COOKIE_SECURE", "True").lower() == "true"
+    CSRF_COOKIE_SECURE = os.environ.get("CSRF_COOKIE_SECURE", "True").lower() == "true"
     SECURE_SSL_REDIRECT = False
     CSRF_TRUSTED_ORIGINS = [
         "https://localhost",
         "https://127.0.0.1",
+        "http://localhost:8000,",
     ]
 elif APP_ENV == "render":
     SESSION_COOKIE_SECURE = True
@@ -199,6 +204,7 @@ else:
     CSRF_TRUSTED_ORIGINS = [
         "http://localhost",
         "http://127.0.0.1",
+        "https://*.trycloudflare.com",
     ]
 
 # 테스트 속도 향상

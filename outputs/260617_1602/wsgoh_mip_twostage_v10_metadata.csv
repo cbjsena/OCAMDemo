@@ -1,0 +1,35 @@
+field,value
+algorithm,wsgoh/mip_twostage_v10
+status,ok
+solution_file,wsgoh_mip_twostage_v10_solution.json
+logs_file,wsgoh_mip_twostage_v10_logs.txt
+actual_port_calls,1024
+bunker_cost,299138841.5982497
+bunker_cost_by_inlane_sail,285478911.5010969
+bunker_cost_by_outlane_sail,7319916.062326971
+bunker_cost_by_port_stay,6340014.034830148
+canal_fee_cost,73911874.95303
+num_virtual_vessels,0
+opportunity_cost,0.0
+service_lane_coverage_rate,1.0
+slot_utilization_deployed_teu_days,144643583.33333337
+slot_utilization_rate,1.0
+slot_utilization_required_teu_days,144643583.33333337
+total_cost,377010209.55127966
+total_port_calls,1024
+transshipment_cost,3959493.0
+transshipment_count,6
+vessel_available_days,12806.0
+vessel_drydock_days,112.0
+vessel_service_days,7934.520833333328
+vessel_utilization_rate,0.6195940054141283
+elapsed_seconds,99.1487004999999
+input_dir,D:\dev\django\OCAMDemo\instances\toy_v1
+input_dir_name,toy_v1
+outputs_run_dir,260617_1602
+planning_horizon_end,2027-01-01 00:00:00
+planning_horizon_start,2026-03-10 19:30:00
+position_declaration_summary,"{""format"": ""ocam_position_declaration_summary_v1"", ""rows"": [{""lane_code"": ""EC1"", ""proforma_name"": ""8102"", ""available_positions"": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14], ""selected_positions"": [7, 9, 10, 11, 12, 13, 14], ""required_count"": 7, ""declared_count"": 14, ""effective_from_date"": ""2026-07-02 00:00:00""}, {""lane_code"": ""EC2"", ""proforma_name"": ""8201"", ""available_positions"": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13], ""selected_positions"": [7, 8, 9, 10, 11, 12, 13], ""required_count"": 7, ""declared_count"": 13, ""effective_from_date"": ""2026-08-15 00:00:00""}, {""lane_code"": ""FE1"", ""proforma_name"": ""5102"", ""available_positions"": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13], ""selected_positions"": [9, 10, 11, 12, 13], ""required_count"": 5, ""declared_count"": 13, ""effective_from_date"": ""2026-07-01 00:00:00""}, {""lane_code"": ""FE2"", ""proforma_name"": ""5202"", ""available_positions"": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12], ""selected_positions"": [7, 8, 9, 10, 11, 12], ""required_count"": 6, ""declared_count"": 12, ""effective_from_date"": ""2026-07-05 00:00:00""}, {""lane_code"": ""PS1"", ""proforma_name"": ""7102"", ""available_positions"": [1, 2, 3, 4, 5, 6, 7, 8, 9], ""selected_positions"": [5, 6, 7, 8, 9], ""required_count"": 5, ""declared_count"": 9, ""effective_from_date"": ""2026-07-22 00:00:00""}, {""lane_code"": ""WA1"", ""proforma_name"": ""6102"", ""available_positions"": [1, 2, 3, 4, 5, 6, 7, 8], ""selected_positions"": [6, 7, 8], ""required_count"": 3, ""declared_count"": 8, ""effective_from_date"": ""2026-08-05 00:00:00""}]}"
+postprocessed,True
+scenario_name,toy_scenario_v1
+validation_status,passed
