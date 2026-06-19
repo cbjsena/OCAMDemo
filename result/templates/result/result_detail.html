@@ -3,14 +3,13 @@
 {% block title %}Result Detail - OCAM Demo{% endblock %}
 
 {% block sidebar %}
-<h6 class="sidebar-heading">Results</h6>
+<h6 class="sidebar-heading">Result Menu</h6>
 <ul class="nav flex-column">
-    {% for r in results %}
+    {% for item in sidebar_menu %}
     <li class="nav-item">
-        <a class="nav-link {% if r.folder == current_folder and r.filename == current_filename %}active{% else %}text-white-50{% endif %}"
-           href="{% url 'result:result_detail' folder=r.folder filename=r.filename %}">
-            <i class="bi bi-file-earmark-code me-1"></i>
-            <small>{{ r.folder }}<br>{{ r.filename }}</small>
+        <a class="nav-link {% if current_sidebar_menu == item.key %}active{% else %}text-white-50{% endif %}"
+           href="{% url item.url_name %}">
+            <i class="bi {{ item.icon }} me-2"></i> {{ item.name }}
         </a>
     </li>
     {% endfor %}

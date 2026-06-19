@@ -84,3 +84,20 @@ SIMULATION_SIDEBAR_MENU = [
         "icon": "bi-cloud-upload",
     },
 ]
+
+
+# Result 하위 메뉴 (좌측 사이드바)
+RESULT_SIDEBAR_MENU = [
+    {
+        "key": "result_list",
+        "name": "Result List",
+        "url_name": "result:result_list",
+        "icon": "bi-list-ul",
+    },
+    {
+        "key": "result_leaderboard",
+        "name": "Leaderboard",
+        "url_name": "result:result_leaderboard",
+        "icon": "bi-trophy",
+    },
+]

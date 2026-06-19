@@ -10,6 +10,7 @@ from django.http import HttpResponse
 from django.shortcuts import render
 
 from common import messages as msg
+from common.menus import RESULT_SIDEBAR_MENU
 from result.services import (
     discover_results,
     get_result_detail,
@@ -31,6 +32,8 @@ def result_list(request):
         "result/result_list.html",
         {
             "current_top_menu": "result",
+            "sidebar_menu": RESULT_SIDEBAR_MENU,
+            "current_sidebar_menu": "result_list",
             "results": results,
         },
     )
@@ -54,6 +57,8 @@ def result_view(request, folder):
             "result/result_list.html",
             {
                 "current_top_menu": "result",
+                "sidebar_menu": RESULT_SIDEBAR_MENU,
+                "current_sidebar_menu": "result_list",
                 "results": results,
             },
         )
@@ -116,6 +121,8 @@ def result_detail(request, folder, filename):
             "result/result_list.html",
             {
                 "current_top_menu": "result",
+                "sidebar_menu": RESULT_SIDEBAR_MENU,
+                "current_sidebar_menu": "result_list",
                 "results": results,
             },
         )
@@ -128,10 +135,28 @@ def result_detail(request, folder, filename):
         "result/result_detail.html",
         {
             "current_top_menu": "result",
+            "sidebar_menu": RESULT_SIDEBAR_MENU,
+            "current_sidebar_menu": "result_list",
             "results": results,
             "current_folder": folder,
             "current_filename": filename,
             "data": data,
             "formatted_json": formatted_json,
+        },
+    )
+
+
+@login_required
+def result_leaderboard(request):
+    """Leaderboard - 임시 페이지."""
+    results = discover_results()
+    return render(
+        request,
+        "result/result_leaderboard.html",
+        {
+            "current_top_menu": "result",
+            "sidebar_menu": RESULT_SIDEBAR_MENU,
+            "current_sidebar_menu": "result_leaderboard",
+            "results": results,
         },
     )
