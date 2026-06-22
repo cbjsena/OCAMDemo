@@ -66,10 +66,22 @@ def _validate_solver(solver_path: Path) -> bool:
 
     try:
         spec = importlib.util.spec_from_file_location("solver_check", solver_path)
+        if spec is None or spec.loader is None:
+            return False
+
         module = importlib.util.module_from_spec(spec)
-        spec.loader.exec_module(module)
-        func = getattr(module, SOLVER_FUNCTION_NAME, None)
-        return callable(func)
+
+        # sys.modules에 등록하여 dataclass decorator가 __module__을 찾을 수 있도록 함
+        import sys
+        sys.modules[spec.name] = module
+
+        try:
+            spec.loader.exec_module(module)
+            func = getattr(module, SOLVER_FUNCTION_NAME, None)
+            return callable(func)
+        finally:
+            # 임시 모듈 제거
+            sys.modules.pop(spec.name, None)
     except Exception:
         return False
 
@@ -80,19 +92,28 @@ def validate_solver_with_reason(solver_path: Path) -> tuple[bool, str]:
         return False, f"{SOLVER_FILENAME} not found"
 
     try:
+        import sys
         spec = importlib.util.spec_from_file_location("solver_check", solver_path)
-        module = importlib.util.module_from_spec(spec)
         if spec is None or spec.loader is None:
             return False, "failed to load module spec"
-        spec.loader.exec_module(module)
-        func = getattr(module, SOLVER_FUNCTION_NAME, None)
-        if not callable(func):
-            return False, f"No callable '{SOLVER_FUNCTION_NAME}()'"
 
-        sig = inspect.signature(func)
-        if len(sig.parameters) != 2:
-            return False, "algorithm() must accept exactly 2 parameters"
-        return True, "ok"
+        module = importlib.util.module_from_spec(spec)
+
+        # sys.modules에 등록하여 dataclass decorator가 __module__을 찾을 수 있도록 함
+        sys.modules[spec.name] = module
+        try:
+            spec.loader.exec_module(module)
+            func = getattr(module, SOLVER_FUNCTION_NAME, None)
+            if not callable(func):
+                return False, f"No callable '{SOLVER_FUNCTION_NAME}()'"
+
+            sig = inspect.signature(func)
+            if len(sig.parameters) != 2:
+                return False, "algorithm() must accept exactly 2 parameters"
+            return True, "ok"
+        finally:
+            # 임시 모듈 제거
+            sys.modules.pop(spec.name, None)
     except Exception as e:
         return False, str(e)
 
@@ -192,6 +213,7 @@ def load_algorithm_function(full_name: str):
     Returns:
         callable algorithm() 함수
     """
+    import sys
     root = get_algorithms_dir()
     parts = full_name.split("/")
     if len(parts) != 2:
@@ -201,14 +223,22 @@ def load_algorithm_function(full_name: str):
     if not solver_path.exists():
         raise FileNotFoundError(f"solver.py not found: {solver_path}")
 
-    spec = importlib.util.spec_from_file_location(
-        f"algo_{full_name.replace('/', '_')}", solver_path
-    )
+    module_name = f"algo_{full_name.replace('/', '_')}"
+    spec = importlib.util.spec_from_file_location(module_name, solver_path)
+    if spec is None or spec.loader is None:
+        raise RuntimeError(f"Failed to load spec for {solver_path}")
+
+    assert spec is not None and spec.loader is not None
     module = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(module)
 
-    func = getattr(module, SOLVER_FUNCTION_NAME, None)
-    if not callable(func):
-        raise AttributeError(f"No callable '{SOLVER_FUNCTION_NAME}()' in {solver_path}")
-
-    return func
+    # sys.modules에 등록하여 dataclass decorator가 __module__을 찾을 수 있도록 함
+    sys.modules[module_name] = module
+    try:
+        spec.loader.exec_module(module)
+        func = getattr(module, SOLVER_FUNCTION_NAME, None)
+        if not callable(func):
+            raise AttributeError(f"No callable '{SOLVER_FUNCTION_NAME}()' in {solver_path}")
+        return func
+    finally:
+        # 사용 후 제거
+        sys.modules.pop(module_name, None)

@@ -53,8 +53,21 @@ def _save_result(simulation, result: AlgorithmResult | LowerBoundResult) -> dict
     execution_time = None
     output_dir = None
     if result.metadata and isinstance(result.metadata, dict):
-        execution_time = result.metadata.get("elapsed_time")
-        output_dir = result.metadata.get("outputs_run_dir")
+        # OCAM outputs may store elapsed time under different keys depending on
+        # legacy vs current exporters. Support both 'elapsed_time' and
+        # 'elapsed_seconds'. Cast numeric-like strings to float when possible.
+        if "elapsed_time" in result.metadata:
+            execution_time = result.metadata.get("elapsed_time")
+        else:
+            # legacy key used by some result producers
+            execution_time = result.metadata.get("elapsed_seconds")
+        output_dir = result.metadata.get("outputs_run_dir") or result.metadata.get("outputs_run_folder")
+        # normalize to float if possible
+        try:
+            if execution_time is not None:
+                execution_time = float(execution_time)
+        except (TypeError, ValueError):
+            execution_time = None
 
     result_data = {
         "simulation_id": simulation.id,

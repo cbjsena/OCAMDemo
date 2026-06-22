@@ -19,4 +19,5 @@ urlpatterns = [
         name="simulation_status_api",
     ),
     path("api/<int:sim_id>/cancel/", views.simulation_cancel, name="simulation_cancel"),
+    path("delete/<int:sim_id>/", views.simulation_delete, name="simulation_delete"),
 ]

@@ -19,6 +19,25 @@
 {% block content %}
 <h3 class="mb-4"><i class="bi bi-list-ul"></i> Simulation List</h3>
 
+<!-- Filter Section -->
+<div class="card shadow-sm mb-4">
+    <div class="card-body">
+        <form method="get" class="row g-3">
+            <div class="col-md-4">
+                <label for="created_by_filter" class="form-label">Filter by Created By</label>
+                <select id="created_by_filter" name="created_by_id" class="form-select" onchange="this.form.submit()">
+                    <option value="">-- All Users --</option>
+                    {% for user in all_users %}
+                    <option value="{{ user.id }}" {% if selected_created_by_id|add:"0" == user.id %}selected{% endif %}>
+                        {{ user.username }}
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+        </form>
+    </div>
+</div>
+
 <div class="card shadow-sm">
     <div class="card-body p-0">
         <div class="table-responsive">
@@ -30,9 +49,11 @@
                         <th>Algorithm</th>
                         <th>Status</th>
                         <th>Progress</th>
-                        <th>Objective</th>
-                        <th>Time (s)</th>
+<!--                        <th>Objective</th>-->
+<!--                        <th>Time (s)</th>-->
+                        <th>Created By</th>
                         <th>Created</th>
+                        <th>Actions</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -60,9 +81,26 @@
                                      style="width: {{ sim.progress }}%">{{ sim.progress }}%</div>
                             </div>
                         </td>
-                        <td>{% if sim.objective_value %}{{ sim.objective_value|floatformat:2 }}{% else %}-{% endif %}</td>
-                        <td>{% if sim.execution_time %}{{ sim.execution_time|floatformat:1 }}{% else %}-{% endif %}</td>
+<!--                        <td>{% if sim.objective_value %}{{ sim.objective_value|floatformat:2 }}{% else %}-{% endif %}</td>-->
+<!--                        <td>{% if sim.execution_time %}{{ sim.execution_time|floatformat:1 }}{% else %}-{% endif %}</td>-->
+                        <td>
+                            {% if sim.created_by %}
+                                {{ sim.created_by.username }}
+                            {% else %}
+                                -
+                            {% endif %}
+                        </td>
                         <td>{{ sim.created_at|date:"Y-m-d H:i" }}</td>
+                        <td>
+                            {% if not sim.is_processing %}
+                            <form method="post" action="{% url 'simulation:simulation_delete' sim.id %}" style="display:inline;" onsubmit="return confirm('Delete simulation #{{ sim.id }}?');">
+                                {% csrf_token %}
+                                <button type="submit" class="btn btn-sm btn-danger">Delete</button>
+                            </form>
+                            {% else %}
+                            <button type="button" class="btn btn-sm btn-secondary" disabled>Running</button>
+                            {% endif %}
+                        </td>
                     </tr>
                     {% empty %}
                     <tr>

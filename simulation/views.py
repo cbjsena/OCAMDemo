@@ -13,6 +13,7 @@ from instance.services.instance_service import discover_instances
 from simulation.algorithm_scanner import discover_algorithms, install_algorithm_zip
 from simulation.models import SimulationRun
 from simulation.tasks import run_simulation_task
+from django.views.decorators.http import require_POST
 
 logger = logging.getLogger(__name__)
 
@@ -21,6 +22,19 @@ logger = logging.getLogger(__name__)
 def simulation_list(request):
     """시뮬레이션 전체 목록."""
     simulations = SimulationRun.objects.all()
+    # created_by_id 필터링
+    created_by_id = request.GET.get("created_by_id")
+    if created_by_id:
+        try:
+            simulations = simulations.filter(created_by_id=int(created_by_id))
+        except (ValueError, TypeError):
+            pass
+
+    # 필터 옵션: 모든 사용자 목록
+    from django.contrib.auth import get_user_model
+    User = get_user_model()
+    all_users = User.objects.all().order_by("username")
+
     return render(
         request,
         "simulation/simulation_list.html",
@@ -29,6 +43,8 @@ def simulation_list(request):
             "sidebar_menu": SIMULATION_SIDEBAR_MENU,
             "current_sidebar_menu": "simulation_list",
             "simulations": simulations,
+            "all_users": all_users,
+            "selected_created_by_id": created_by_id or "",
         },
     )
 
@@ -169,3 +185,70 @@ def simulation_cancel(request, sim_id):
     if request.headers.get("X-Requested-With") == "XMLHttpRequest":
         return JsonResponse({"status": sim.status})
     return redirect("simulation:simulation_monitoring")
+
+
+@login_required
+@require_POST
+def simulation_delete(request, sim_id):
+    """시뮬레이션 삭제 (목록 화면의 삭제 버튼)."""
+    sim = get_object_or_404(SimulationRun, pk=sim_id)
+    # 권한: 작성자 본인 또는 관리자만 삭제 가능
+    if not (request.user.is_superuser or (sim.created_by is not None and sim.created_by == request.user)):
+        messages.warning(request, msg.SIMULATION_DELETE_FAILED.format(sim_id=sim.id))
+        if request.headers.get("X-Requested-With") == "XMLHttpRequest":
+            return JsonResponse({"status": "forbidden"}, status=403)
+        return redirect("simulation:simulation_list")
+
+    # 실행 중인 시뮬레이션은 삭제할 수 없음
+    if sim.is_processing:
+        messages.warning(request, msg.SIMULATION_DELETE_FAILED.format(sim_id=sim.id))
+        if request.headers.get("X-Requested-With") == "XMLHttpRequest":
+            return JsonResponse({"status": "processing"}, status=400)
+        return redirect("simulation:simulation_list")
+
+    # 결과 출력 폴더(파일)도 함께 삭제 시도
+    output_deleted = False
+    try:
+        from pathlib import Path
+        import shutil
+        from django.conf import settings
+
+        if sim.output_folder:
+            candidate = Path(sim.output_folder)
+            output_path = None
+            if candidate.is_absolute() and candidate.exists():
+                output_path = candidate
+            else:
+                outputs_root = Path(getattr(settings, "OUTPUTS_DIR", "."))
+                alt = outputs_root / sim.output_folder
+                if alt.exists():
+                    output_path = alt
+                elif candidate.exists():
+                    output_path = candidate
+
+            if output_path and output_path.exists():
+                if output_path.is_dir():
+                    shutil.rmtree(output_path)
+                    output_deleted = True
+                else:
+                    output_path.unlink(missing_ok=True)
+                    output_deleted = True
+    except Exception:
+        # 파일 삭제 실패는 로깅 후 무시
+        logger.exception("Failed to delete output folder for simulation %s", sim.id)
+
+    try:
+        sim.delete()
+        success_msg = msg.SIMULATION_DELETED.format(sim_id=sim.id)
+        if output_deleted:
+            success_msg = success_msg + " Outputs removed."
+        messages.success(request, success_msg)
+        if request.headers.get("X-Requested-With") == "XMLHttpRequest":
+            return JsonResponse({"status": "deleted", "outputs_removed": output_deleted})
+    except Exception as e:
+        messages.error(request, msg.SAVE_ERROR.format(target="simulation", error=str(e)))
+        if request.headers.get("X-Requested-With") == "XMLHttpRequest":
+            return JsonResponse({"status": "error", "error": str(e)}, status=500)
+
+    return redirect("simulation:simulation_list")
+

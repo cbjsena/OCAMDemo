@@ -48,7 +48,7 @@ class TestSimulationAlgorithmUploadScenarios:
             {
                 "gildong/vessel_swap/__init__.py": b"",
                 "gildong/vessel_swap/solver.py": b"def algorithm(instance_data, timelimit):\n"
-                b"return {'ok': True}\n",
+                b"    return {'ok': True}\n",
             },
         )
         response = auth_client.post(
@@ -67,7 +67,7 @@ class TestSimulationAlgorithmUploadScenarios:
             {
                 "dup/algo/__init__.py": b"",
                 "dup/algo/solver.py": b"def algorithm(instance_data, timelimit):\n"
-                b"return {'ok': True}\n",
+                b"    return {'ok': True}\n",
             },
         )
         auth_client.post(
@@ -80,7 +80,7 @@ class TestSimulationAlgorithmUploadScenarios:
             {
                 "dup/algo/__init__.py": b"",
                 "dup/algo/solver.py": b"def algorithm(instance_data, timelimit):\n"
-                b"return {'ok': True}\n",
+                b"    return {'ok': True}\n",
             },
         )
         response = auth_client.post(

@@ -60,6 +60,8 @@ SIMULATION_CANCELED = "Simulation '{sim_id}' has been canceled."
 SIMULATION_CANCEL_FAILED = "Cannot cancel simulation '{sim_id}': not in running state."
 SIMULATION_NOT_FOUND = "Simulation not found."
 SIMULATION_FAILED = "Simulation failed: {error}"
+SIMULATION_DELETED = "Simulation '{sim_id}' has been deleted."
+SIMULATION_DELETE_FAILED = "Cannot delete simulation '{sim_id}': it may be running or you lack permissions."
 
 # ==========================================
 # 6. Result
