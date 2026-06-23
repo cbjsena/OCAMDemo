@@ -253,12 +253,24 @@ def discover_results() -> list[dict]:
         if dt is None:
             continue
 
+        # Find SimulationRun whose output_folder matches this folder name.
+        sim_id = None
+        try:
+            from simulation.models import SimulationRun
+            sim = None
+            # Prefer exact match first
+            sim = SimulationRun.objects.filter(output_folder=folder.name).first()
+            sim_id = sim.id if sim else None
+        except Exception:
+            sim_id = None
+
         algos, lbs = _scan_run_dir(folder)
         for algo in algos:
             meta = algo["metadata"]
             results.append(
                 {
                     "folder": folder.name,
+                    "simulation_id": sim_id,
                     "algo_key": algo["key"],
                     "filename": f"{algo['key']}_solution.json",
                     "datetime": dt,
@@ -275,6 +287,7 @@ def discover_results() -> list[dict]:
             results.append(
                 {
                     "folder": folder.name,
+                    "simulation_id": sim_id,
                     "algo_key": lb["key"],
                     "filename": f"{lb['key']}_lower_bound.json",
                     "datetime": dt,

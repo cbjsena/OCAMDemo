@@ -8,3 +8,7 @@ __pycache__/
 .vscode
 *.xml
 .idea/
+output/*
+!output/leader/
+!output/lower/
+!output/clean.py

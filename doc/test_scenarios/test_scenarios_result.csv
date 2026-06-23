@@ -1,0 +1,11 @@
+ID,기능명,시나리오 설명,Given,When,Then
+RES_LST_DIS_001,Result List 메뉴 라우팅,상단 메뉴의 Result 클릭 시 결과 목록으로 이동한다,"로그인 완료",GET /result/,"1. Status 200 OK 2. 'Result List' 제목 표시 3. 사이드바 active=Result List"
+RES_LST_DIS_002,결과 목록 조회 (정상),outputs 폴더의 결과가 테이블에 표시된다,"로그인 완료, outputs에 결과 run 폴더 1개 이상 존재",GET /result/,"1. Status 200 OK 2. Run Folder/Sim ID/Algorithm/Instance/Status 컬럼 표시 3. 각 결과 행 렌더링"
+RES_LST_DIS_003,결과 Sim ID 표시,outputs 폴더와 연결된 SimulationRun이 있으면 Sim ID가 표시된다,"로그인 완료, SimulationRun.output_folder == folder.name인 레코드 존재",GET /result/,"1. 해당 행의 Sim ID 열에 DB의 id 표시"
+RES_LST_DIS_004,결과 Sim ID 미표시,SimulationRun이 없으면 Sim ID가 '-'로 표시된다,"로그인 완료, outputs 폴더에 run 폴더 존재하나 DB에 매칭 없음",GET /result/,"1. Sim ID 열에 '-' 표시"
+RES_LST_DIS_005,결과 상세(Visualizer) 링크,Visualize 버튼 클릭 시 비주얼라이저로 이동한다,"로그인 완료, 결과가 존재",GET /result/ 이후 Visualize 버튼 클릭,"1. Visualizer 페이지(200) 응답 2. Visualizer에 runs 데이터가 주입되어 상태/알고리즘 선택 가능"
+RES_LST_DIS_006,결과 목록 빈 상태,결과가 없으면 빈 상태 메시지를 표시한다,"로그인 완료, outputs에 결과가 없음",GET /result/,"1. Status 200 OK 2. 'No results found.' 메시지 표시"
+RES_LST_DIS_007,Result List 로그인 검증,비로그인 사용자는 접근이 차단된다,"비로그인 상태",GET /result/,"1. Redirect 302 -> 로그인 페이지"
+RES_LST_DIS_008,결과 파일 상세 뷰(legacy),존재하는 결과 파일 요청 시 상세 JSON가 표시된다,"로그인 완료, folder/filename이 존재",GET /result/{folder}/{filename}/,"1. Status 200 OK 2. 결과 JSON 내용이 렌더링 3. 사이드바/리스트 네비게이션 표시"
+RES_LST_DIS_009,Visualizer 파일 누락 처리,Visualizer 정적 파일(index.html) 누락 시 목록으로 복귀 및 에러 메시지 표시,"로그인 완료, visualizer 파일 없음",GET /result/{folder}/,"1. 결과 목록으로 복귀 2. Error message 'Visualizer 파일을 찾을 수 없습니다.' 표시"
+RES_LST_DIS_010,결과 목록 정렬(최신순),결과가 최신 실행 폴더 순으로 표시된다,"로그인 완료, outputs에 여러 run 폴더 존재",GET /result/,"1. 최신 폴더가 첫 행에 표시"

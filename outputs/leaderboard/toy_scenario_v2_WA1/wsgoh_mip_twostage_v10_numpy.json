@@ -63,7 +63,7 @@
     "postprocessed": true,
     "validation_status": "passed",
     "leaderboard_entry_type": "best",
-    "leaderboard_updated_at": "2026-05-18T08:54:19",
+    "leaderboard_updated_at": "2026-06-23T13:40:47",
     "leaderboard_source_run": "260518_0853",
     "leaderboard_source_dir": "260518_0853",
     "leaderboard_runtime_history": [
@@ -72,8 +72,14 @@
         "recorded_at": "2026-05-18T08:54:19",
         "elapsed_seconds": 10.789515700000265,
         "outputs_instance_dir": "005_WA1"
+      },
+      {
+        "run": "260623_1340",
+        "recorded_at": "2026-06-23T13:40:47",
+        "elapsed_seconds": 17.95165669999551
       }
-    ]
+    ],
+    "leaderboard_last_equal_source_run": "260623_1340"
   },
   "solution": {
     "declared_positions": [

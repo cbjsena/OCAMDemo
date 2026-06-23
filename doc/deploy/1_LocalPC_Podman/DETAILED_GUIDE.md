@@ -38,21 +38,13 @@
 podman --version
 
 # 미설치 시 설치
-# Windows
-winget install podman
+# Windows: winget install podman
+# Mac:  brew install podman
+# Linux (Ubuntu/Debian): sudo apt-get install podman
+# Linux (CentOS/RHEL): sudo yum install podman
 
-# Mac
-brew install podman
-
-# Linux (Ubuntu/Debian)
-sudo apt-get install podman
-
-# Linux (CentOS/RHEL)
-sudo yum install podman
-```
 
 ### 2. 프로젝트 폴더 구조 확인
-
 ```
 OCAMDemo/
 ├── Dockerfile ✅
@@ -65,19 +57,11 @@ OCAMDemo/
 
 ### 3. .env.docker 파일 확인/생성
 
-프로젝트 루트에 `.env.docker` 파일이 있는지 확인:
+프로젝트 루트에 .env.docker 파일, 없다면 4_Configuration > Environment_Variables.md 참고
 
-```bash
-# 파일 확인
-ls -la .env.docker
-```
-
-**파일 없으면 생성** (`설정 > 환경 변수 가이드` 참고):
-
-```env
+```env example
 DEBUG=False
 SECRET_KEY=your-very-secure-random-key-here
-SECRET_KEY=django-insecure-example1234567890example1234567890example
 APP_ENV=docker
 ALLOWED_HOSTS=*,localhost,127.0.0.1
 DATABASE_URL=sqlite:///db.sqlite3
